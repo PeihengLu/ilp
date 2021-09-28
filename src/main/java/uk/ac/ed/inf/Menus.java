@@ -28,7 +28,8 @@ public class Menus {
         // location of the menus file on the server
         String menu = server + "/menus/menus.json";
         // load the content into a JSONArray object
-        this.json = ReadJson.readJsonFromUrl(menu);
+        ReadJson rj = new ReadJson(menu);
+        this.json = rj.readJsonFromUrl();
     }
 
 
