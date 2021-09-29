@@ -1,10 +1,9 @@
 package uk.ac.ed.inf;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -51,12 +50,39 @@ public class ReadJson {
     }
 
 
-    /**
-     * Parse the file content into a Json array
-     * @return JSONArray object read from the file, returns null if errors occurred at reading or parsing
-     */
+
+    private String readAll() {
+        InputStream is = null;
+        try {
+            is = new URL(this.url).openStream();
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+            return "";
+        }
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
+        StringBuilder sb = new StringBuilder();
+        int cp;
+        try {
+            while ((cp = reader.read()) != -1) {
+                sb.append((char) cp);
+            }
+        } catch (IOException ex) {
+            System.err.println(ex);
+            return "";
+        }
+        return sb.toString();
+    }
+
+
+
+
+
+            /**
+             * Parse the file content into a Json array
+             * @return JSONArray object read from the file, returns null if errors occurred at reading or parsing
+             */
     public JSONArray getJsonArray() {
-        String response = readStringFromUrl();
+        String response = readAll();
         if (response.equals("")) {
             System.err.println("Failed to read Json file");
             return null;
@@ -75,7 +101,7 @@ public class ReadJson {
      * @return JSON object read from the file, returns null if errors occurred at reading or parsing
      */
     public JSONObject getJsonObject() {
-        String response = readStringFromUrl();
+        String response = readAll();
         if (response.equals("")) {
             System.err.println("Failed to read Json file");
             return null;
