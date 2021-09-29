@@ -1,8 +1,7 @@
 package uk.ac.ed.inf;
 
 /**
- * Hello world!
- *
+ * The lunch delivery drone control system
  */
 public class App 
 {

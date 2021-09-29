@@ -1,12 +1,12 @@
 package uk.ac.ed.inf;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.io.IOException;
+import java.lang.reflect.Array;
+import java.lang.reflect.Type;
+import java.util.*;
 
 
 /**
@@ -15,10 +15,10 @@ import java.util.HashSet;
  * delivery cost of an order, as well as if an order is legal
  */
 public class Menus {
-    // record where the food is sold
-    private HashMap<String, String> provider = new HashMap<>();
-    // record the prices of food
-    private HashMap<String, Integer> prices = new HashMap<>();
+    /** record where the food is sold */
+    private final HashMap<String, String> provider = new HashMap<>();
+    /** record the prices of food */
+    private final HashMap<String, Integer> prices = new HashMap<>();
 
 
     /**
@@ -32,21 +32,30 @@ public class Menus {
         // url of the server
         String server = "HTTP://" + name + ":" + port;
         // location of the menus file on the server
-        String menu = server + "/menus/menus.json";
+        String AddressToMenu = server + "/menus/menus.json";
         // load the content into a JSONArray object
-        ReadJson rj = new ReadJson(menu);
-        // the JSONArray read from the menus json file on the web server
-        JSONArray json = rj.getJsonArray();
-        // read the menus file and store them in the HashMaps
-        for (int i = 0; i < json.length(); i ++) {
-            JSONObject shop = json.getJSONObject(i);
-            String shopName = shop.getString("name");
-            JSONArray menus = shop.getJSONArray("menu");
-            // go through the list of items in the current shop and look for desired items
-            for (int j = 0; j < menus.length(); j++) {
-                JSONObject item = menus.getJSONObject(j);
-                provider.put(item.getString("item"), shopName);
-                prices.put(item.getString("item"), (int) item.get("pence"));
+        ConnectServer connection = new ConnectServer(AddressToMenu);
+
+        // the file content read from the menus json file on the web server
+        String response = connection.readStringFromUrl();
+        if (response == null) {
+            System.err.println("Trouble connecting to server");
+            return;
+        }
+
+        // parse the response with Gson into a list of shops
+        Type shopListType = new TypeToken<ArrayList<Shop>>() {}.getType();
+        ArrayList<Shop> shops = new Gson().fromJson(response, shopListType);
+        if (shops == null) {
+            System.err.println("Issue with parsing of JSON file");
+            return;
+        }
+        for (Shop shop: shops) {
+            String shopName = shop.getName();
+            ArrayList<Item> menu = shop.getMenu();
+            for (Item i : menu) {
+                provider.put(i.getName(), shopName);
+                prices.put(i.getName(), i.getPrice());
             }
         }
     }

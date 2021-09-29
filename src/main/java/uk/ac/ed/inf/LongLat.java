@@ -6,18 +6,21 @@ package uk.ac.ed.inf;
  * also containing useful functions for calculating the movement of the drone
  */
 public class LongLat {
-    public double longitude, latitude;
+    /** longitude and latitude of current object */
+    private final double longitude;
+    private final double latitude;
 
     // Below are some possibly useful coordinates of key locations
-    // Forest Hill on Top Left
-    private static final LongLat FH = new LongLat(-3.192473, 55.946233);
-    // KFC on Top Right
-    private static final LongLat KFC = new LongLat(-3.184319, 55.946233);
-    // Top of the Meadows on Bottom Left
-    private static final LongLat TOM = new LongLat(-3.192473, 55.942617);
-    // Buccleuch St Bus Stop on Bottom Right
-    private static final LongLat BBS = new LongLat(-3.184319, 55.942617);
-    // distance for one movement in degrees
+    /** Forest Hill on Top Left */
+    public static final LongLat FH = new LongLat(-3.192473, 55.946233);
+    /** KFC on Top Right */
+    public static final LongLat KFC = new LongLat(-3.184319, 55.946233);
+    /** Top of the Meadows on Bottom Left */
+    public static final LongLat TOM = new LongLat(-3.192473, 55.942617);
+    /** Buccleuch St Bus Stop on Bottom Right */
+    public static final LongLat BBS = new LongLat(-3.184319, 55.942617);
+
+    /** distance for one movement in degrees */
     private static final double distance = 0.00015;
 
 
@@ -67,5 +70,22 @@ public class LongLat {
         // the drone is hovering when angle if -999
         if (angle == -999) return this;
         return new LongLat(this.longitude + distance*Math.cos(Math.toRadians(angle)), this.latitude + distance*Math.sin(Math.toRadians(angle)));
+    }
+
+    /**
+     * return the latitude of the current location
+     * @return latitude of current location
+     */
+    public double getLatitude() {
+        return latitude;
+    }
+
+
+    /**
+     * return the longitude of the current location
+     * @return longitude of current location
+     */
+    public double getLongitude() {
+        return longitude;
     }
 }
