@@ -12,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 
 /**
@@ -31,19 +32,58 @@ public class ReadJson {
 
     /**
      * read a json file from a web server
-     * @return the JSON Array read from the file
+     * @return the content read from the file as a String, returns "" if problems occur at connection or
+     *         reading stage
      */
-    public JSONArray readJsonFromUrl() {
+    private String readStringFromUrl() {
         try {
             HttpRequest request = HttpRequest.newBuilder().uri(URI.create(url)).build();
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() != 200) {
                 System.err.println("Server connection error");
-                return null;
+                return "";
             }
-            return new JSONArray(response.body());
+            return response.body();
         } catch (IOException | InterruptedException | JSONException ex) {
             System.err.println(ex.getMessage());
+            return "";
+        }
+    }
+
+
+    /**
+     * Parse the file content into a Json array
+     * @return JSONArray object read from the file, returns null if errors occurred at reading or parsing
+     */
+    public JSONArray getJsonArray() {
+        String response = readStringFromUrl();
+        if (response.equals("")) {
+            System.err.println("Failed to read Json file");
+            return null;
+        }
+        try {
+            return new JSONArray(response);
+        } catch (JSONException e) {
+            System.err.println(e.getMessage());
+            return null;
+        }
+    }
+
+
+    /**
+     * Parse the file content into a Json object
+     * @return JSON object read from the file, returns null if errors occurred at reading or parsing
+     */
+    public JSONObject getJsonObject() {
+        String response = readStringFromUrl();
+        if (response.equals("")) {
+            System.err.println("Failed to read Json file");
+            return null;
+        }
+        try {
+            return new JSONObject(response);
+        } catch (JSONException e) {
+            System.err.println(e.getMessage());
             return null;
         }
     }

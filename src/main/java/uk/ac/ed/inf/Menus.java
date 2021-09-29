@@ -29,7 +29,7 @@ public class Menus {
         String menu = server + "/menus/menus.json";
         // load the content into a JSONArray object
         ReadJson rj = new ReadJson(menu);
-        this.json = rj.readJsonFromUrl();
+        this.json = rj.getJsonArray();
     }
 
 
