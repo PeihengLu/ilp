@@ -10,6 +10,17 @@ public class Item {
     /** item price in pence*/
     private Integer pence;
 
+
+    /**
+     * construct an Item object storing information about a food item
+     * @param item item name
+     * @param pence item price in pence
+     */
+    public Item(String item, Integer pence) {
+        this.item = item;
+        this.pence = pence;
+    }
+
     /**
      * get the name of the item
      * @return name of the item

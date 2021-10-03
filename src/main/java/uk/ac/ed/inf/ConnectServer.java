@@ -16,7 +16,7 @@ public class ConnectServer {
     private static final HttpClient client = HttpClient.newHttpClient();
 
     /**
-     *
+     * constructor that assigns value to the url attribute
      * @param url the address of the JSON file on the web server
      */
     public ConnectServer(String url) {
@@ -31,6 +31,7 @@ public class ConnectServer {
         try {
             HttpRequest request = HttpRequest.newBuilder().uri(URI.create(url)).build();
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
             if (response.statusCode() != 200) {
                 System.err.println("Server connection error");
                 return null;
