@@ -12,7 +12,7 @@ public class Item {
 
 
     /**
-     * construct an Item object storing information about a food item
+     * construct an Item object storing information about food item
      * @param item item name
      * @param pence item price in pence
      */

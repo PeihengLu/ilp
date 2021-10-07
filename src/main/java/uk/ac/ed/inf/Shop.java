@@ -8,11 +8,11 @@ import java.util.ArrayList;
  */
 public class Shop {
     /** name of the shop */
-    private String name;
+    private final String name;
     /** location of the shop in W3W address format */
-    private String location;
+    private final String location;
     /** list of items for sale in the shop */
-    private ArrayList<Item> menu;
+    private final ArrayList<Item> menu;
 
 
     /**

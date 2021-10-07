@@ -21,9 +21,16 @@ public class LongLat {
     public static final LongLat BBS = new LongLat(-3.184319, 55.942617);
 
     /** distance for one movement in degrees */
-    private static final double distance = 0.00015;
+    public static final double distance = 0.00015;
+    /** threshold for determining where two points are close **/
+    public static final double threshold = 0.00015;
 
 
+    /**
+     * construct a LongLat object with longitude and latitude data
+     * @param longitude longitude of the location
+     * @param latitude latitude of the location
+     */
     public LongLat(double longitude, double latitude) {
         this.lng = longitude;
         this.lat = latitude;
@@ -57,8 +64,8 @@ public class LongLat {
      * @return true if distance is strictly less than 0.00015, false otherwise;
      */
     public boolean closeTo(LongLat other) {
-        // close to is defined by distance strictly less than 0.00015 degrees
-        return distanceTo(other) < 0.00015;
+        // close to is defined by distance strictly less than 0.00015 degrees threshold
+        return distanceTo(other) < threshold;
     }
 
     /**

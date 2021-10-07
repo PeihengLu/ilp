@@ -21,7 +21,7 @@ public class Menus {
 
     /**
      * initializing by connecting to the server and read the content
-     * of the JSON file into a JSONArray, and store them into HashMaps
+     * of the JSON file and store them into HashMaps
      * storing each item's price and provider information
      * @param name the machine name of the online server
      * @param port the port of connection to the online server
