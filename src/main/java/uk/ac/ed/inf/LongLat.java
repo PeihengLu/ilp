@@ -7,8 +7,8 @@ package uk.ac.ed.inf;
  */
 public class LongLat {
     /** longitude and latitude of current object */
-    private final double lng;
-    private final double lat;
+    public final double longitude;
+    public final double latitude;
 
     // Below are some possibly useful coordinates of key locations
     /** Forest Hill on Top Left */
@@ -32,8 +32,8 @@ public class LongLat {
      * @param latitude latitude of the location
      */
     public LongLat(double longitude, double latitude) {
-        this.lng = longitude;
-        this.lat = latitude;
+        this.longitude = longitude;
+        this.latitude = latitude;
     }
 
     /**
@@ -42,10 +42,10 @@ public class LongLat {
      */
     public boolean isConfined() {
         // check the coordinate against the key points on the upper left and lower right corner
-        return this.lng < BBS.lng &&
-               this.lng > FH.lng &&
-               this.lat < FH.lat &&
-               this.lat > BBS.lat;
+        return this.longitude < BBS.longitude &&
+               this.longitude > FH.longitude &&
+               this.latitude < FH.latitude &&
+               this.latitude > BBS.latitude;
     }
 
     /**
@@ -55,7 +55,7 @@ public class LongLat {
      */
     public double distanceTo(LongLat other) {
         // calculate use the Pythagorean function, ignoring the curvature of the ground
-        return Math.sqrt(Math.pow(other.lng - this.lng, 2) + Math.pow(other.lat - this.lat, 2));
+        return Math.sqrt(Math.pow(other.longitude - this.longitude, 2) + Math.pow(other.latitude - this.latitude, 2));
     }
 
     /**
@@ -76,7 +76,7 @@ public class LongLat {
     public LongLat nextPosition(int angle) {
         // the drone is hovering when angle if -999
         if (angle == -999) return this;
-        return new LongLat(this.lng + distance*Math.cos(Math.toRadians(angle)), this.lat + distance*Math.sin(Math.toRadians(angle)));
+        return new LongLat(this.longitude + distance*Math.cos(Math.toRadians(angle)), this.latitude + distance*Math.sin(Math.toRadians(angle)));
     }
 
     /**
@@ -84,7 +84,7 @@ public class LongLat {
      * @return latitude of current location
      */
     public double getLatitude() {
-        return lat;
+        return latitude;
     }
 
 
@@ -93,6 +93,6 @@ public class LongLat {
      * @return longitude of current location
      */
     public double getLongitude() {
-        return lng;
+        return longitude;
     }
 }

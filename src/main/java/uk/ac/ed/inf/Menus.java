@@ -13,10 +13,12 @@ import java.util.*;
  * delivery cost of an order, as well as if an order is legal
  */
 public class Menus {
-    /** record the shop where a food item is sold (itemName, shopName) */
-    private final HashMap<String, String> provider = new HashMap<>();
+    /** record the shop where a food item is sold (itemName, shop) */
+    private final HashMap<String, Shop> provider = new HashMap<>();
     /** record the prices of food items (itemName, price) */
     private final HashMap<String, Integer> prices = new HashMap<>();
+    /** record the shops that's visited for one order */
+    private HashSet<Shop> shopped = new HashSet<>();
 
 
     /**
@@ -51,10 +53,9 @@ public class Menus {
 
         // populate provider and prices Hash tables with information from the server
         for (Shop shop: shops) {
-            String shopName = shop.getName();
             ArrayList<Item> menu = shop.getMenu();
             for (Item i : menu) {
-                provider.put(i.getName(), shopName);
+                provider.put(i.getName(), shop);
                 prices.put(i.getName(), i.getPrice());
             }
         }
@@ -72,7 +73,7 @@ public class Menus {
         // an order can only have [1, 4] items
         if (items.length < 1 || items.length > 4) return -1;
         // record the name of shops visited for one order
-        HashSet<String> shopped = new HashSet<>();
+        shopped = new HashSet<>();
         // 50p of delivery charges
         int val = 50;
 
@@ -88,5 +89,10 @@ public class Menus {
         // against our delivery policy
         if (shopped.size() > 2) return -1;
         return val;
+    }
+
+
+    public HashSet<Shop> getShopped() {
+        return shopped;
     }
 }
