@@ -1,6 +1,7 @@
 package uk.ac.ed.inf;
 
 import com.mapbox.geojson.*;
+import com.mapbox.geojson.Polygon;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +13,9 @@ public class App
 {
     public static void main( String[] args )
     {
+        if (args.length != 5) {
+            System.err.println("You should enter 5 arguments: day, month, year, webserver port and database port!");
+        }
         // fetch the commandline arguments and store them in variables
         String day = args[0];
         String month = args[1];
@@ -21,12 +25,15 @@ public class App
         // name of the server for connection
         String name = "localhost";
         // name of the output geojson file storing the path
-        String outputFile = String.join("-", "drone", day, month, year) + ".geojson";
+        String outputFile = "../" + String.join("-", "drone", day, month, year) + ".geojson";
+
+        // create a menus object
+        Menus menus = new Menus(name, port);
 
         // acquires the no-fly-zones and landmarks
-        GeoJSON geoJSON = new GeoJSON(name, port);
+        GeoJsonUtils geoJsonUtils = new GeoJsonUtils(name, port);
 
-        List<Feature> nfz = GeoJSON.readGeoJson(geoJSON.noFlyZone);
+        List<Feature> nfz = GeoJsonUtils.readGeoJson(geoJsonUtils.noFlyZone);
         List<Polygon> noFlyZones = new ArrayList<Polygon>();
         assert nfz != null;
         for (Feature f: nfz) {
@@ -35,9 +42,9 @@ public class App
             }
         }
 
-        List<Feature> lm = GeoJSON.readGeoJson(geoJSON.landmarks);
+        List<Feature> lm = GeoJsonUtils.readGeoJson(geoJsonUtils.landmarks);
 
-        GeoJSON.writeGeoJson(FeatureCollection.fromFeatures(nfz), outputFile);
+        GeoJsonUtils.writeGeoJson(FeatureCollection.fromFeatures(nfz), outputFile);
 
 //        LineString result;
 //        Feature line = Feature.fromGeometry(result);

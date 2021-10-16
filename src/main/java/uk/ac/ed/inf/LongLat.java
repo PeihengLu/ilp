@@ -36,6 +36,7 @@ public class LongLat {
         this.latitude = latitude;
     }
 
+
     /**
      * check if the coordinate of this LongLat is within the confinement of FH, KFC, TOM and BBS
      * @return true if it's within the confinement, false otherwise
@@ -77,22 +78,5 @@ public class LongLat {
         // the drone is hovering when angle if -999
         if (angle == -999) return this;
         return new LongLat(this.longitude + distance*Math.cos(Math.toRadians(angle)), this.latitude + distance*Math.sin(Math.toRadians(angle)));
-    }
-
-    /**
-     * return the latitude of the current location
-     * @return latitude of current location
-     */
-    public double getLatitude() {
-        return latitude;
-    }
-
-
-    /**
-     * return the longitude of the current location
-     * @return longitude of current location
-     */
-    public double getLongitude() {
-        return longitude;
     }
 }

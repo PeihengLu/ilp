@@ -1,6 +1,12 @@
 package uk.ac.ed.inf;
 
+import com.mapbox.geojson.LineString;
+import com.mapbox.geojson.Point;
+import com.mapbox.geojson.Polygon;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -52,8 +58,8 @@ public class AppTest {
 
 
     private boolean approxEq(LongLat l1, LongLat l2) {
-        return approxEq(l1.getLongitude(), l2.getLongitude()) &&
-                approxEq(l1.getLatitude(), l2.getLatitude());
+        return approxEq(l1.longitude, l2.longitude) &&
+                approxEq(l1.latitude, l2.latitude);
     }
 
     @Test
@@ -195,7 +201,47 @@ public class AppTest {
         String words = "pest.round.peanut";
         Location loc = W3W.convertW3W("localhost", "9898", words);
         assertNotNull(loc);
-        assertEquals(-3.186103, loc.getCoordinates().getLongitude(), 0.0);
-        assertEquals(55.944656, loc.getCoordinates().getLatitude(), 0.0);
+        assertEquals(-3.186103, loc.getCoordinates().lng, 0.0);
+        assertEquals(55.944656, loc.getCoordinates().lat, 0.0);
+    }
+
+    @Test
+    public void testPathInterceptPolygon() {
+        // creating the testing polygon
+        Point polyA = Point.fromLngLat(1, 1);
+        Point polyB = Point.fromLngLat(1, 9);
+        Point polyC = Point.fromLngLat(9, 1);
+        Point polyD = Point.fromLngLat(9, 9);
+        List<Point> poly = new ArrayList<>();
+        poly.add(polyA);
+        poly.add(polyB);
+        poly.add(polyC);
+        poly.add(polyD);
+        poly.add(polyA);
+        LineString polyOuter = LineString.fromLngLats(poly);
+        Polygon polygon = Polygon.fromOuterInner(polyOuter);
+
+        Point testATrue1 = Point.fromLngLat(0, 0);
+        Point testBTrue1 = Point.fromLngLat(10, 10);
+        Point testATrue2 = Point.fromLngLat(0, 2);
+        Point testBTrue2 = Point.fromLngLat(10, 2);
+        Point testATrue3 = Point.fromLngLat(1, 10);
+        Point testBTrue3 = Point.fromLngLat(3, 7);
+        Point testATrue4 = Point.fromLngLat(3, 10);
+        Point testBTrue4 = Point.fromLngLat(3, 7);
+
+        Point testAFalse1 = Point.fromLngLat(0, 11);
+        Point testBFalse1 = Point.fromLngLat(4, 12);
+        Point testAFalse2 = Point.fromLngLat(0, 1);
+        Point testBFalse2 = Point.fromLngLat(0, 6);
+
+
+        assertTrue(GeoJsonUtils.pathInterceptPolygon(testATrue1, testBTrue1, polygon));
+        assertTrue(GeoJsonUtils.pathInterceptPolygon(testATrue2, testBTrue2, polygon));
+        assertTrue(GeoJsonUtils.pathInterceptPolygon(testATrue3, testBTrue3, polygon));
+        assertTrue(GeoJsonUtils.pathInterceptPolygon(testATrue4, testBTrue4, polygon));
+
+        assertFalse(GeoJsonUtils.pathInterceptPolygon(testAFalse1, testBFalse1, polygon));
+        assertFalse(GeoJsonUtils.pathInterceptPolygon(testAFalse2, testBFalse2, polygon));
     }
 }
