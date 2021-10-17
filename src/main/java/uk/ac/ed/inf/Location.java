@@ -6,19 +6,19 @@ package uk.ac.ed.inf;
  */
 public class Location {
     /** the country this location is in **/
-    private String country;
+    private final String country;
     /** the square represented by this location **/
-    private Square square;
+    private final Square square;
     /** the nearest city to this location **/
-    private String nearestPlace;
+    private final String nearestPlace;
     /** the long lat coordinate of the location **/
-    private LongLatSimple coordinates;
+    private final LongLatSimple coordinates;
     /** the location in w3w format **/
-    private String words;
+    private final String words;
     /** the language of the name of the location **/
-    private String language;
+    private final String language;
     /** url to its location on the map of w3w server **/
-    private String map;
+    private final String map;
 
 
     /**
