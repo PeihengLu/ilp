@@ -1,5 +1,6 @@
 package uk.ac.ed.inf;
 
+import com.mapbox.geojson.Feature;
 import com.mapbox.geojson.LineString;
 import com.mapbox.geojson.Point;
 import com.mapbox.geojson.Polygon;
@@ -244,5 +245,40 @@ public class AppTest {
 
         assertFalse(GeoJsonUtils.pathInterceptPolygon(testAFalse1, testBFalse1, polygon));
         assertFalse(GeoJsonUtils.pathInterceptPolygon(testAFalse2, testBFalse2, polygon));
+    }
+
+
+    @Test
+    public void testCheckNFZ() {
+        GeoJsonUtils geoJsonUtils = new GeoJsonUtils("Localhost", "9898");
+
+        List<Feature> nfz = GeoJsonUtils.readGeoJson(geoJsonUtils.noFlyZone);
+        List<Polygon> noFlyZones = new ArrayList<>();
+        for (Feature f: nfz) {
+            noFlyZones.add((Polygon)f.geometry());
+        }
+
+        LongLat rudis = new LongLat(-3.1911, 55.9456);
+        LongLat truck_hits_early = new LongLat(-3.1882, 55.9436);
+        LongLat greggs = new LongLat(-3.1913, 55.9456);
+        LongLat picnic = new LongLat(-3.1852, 55.9447);
+        LongLat bing = new LongLat(-3.1853, 55.9447);
+
+
+        assertTrue(checkNFZ(greggs, truck_hits_early, noFlyZones));
+        assertTrue(checkNFZ(rudis, truck_hits_early, noFlyZones));
+        assertFalse(checkNFZ(picnic, bing, noFlyZones));
+        assertFalse(checkNFZ(greggs, rudis, noFlyZones));
+    }
+
+    private static boolean checkNFZ(LongLat p1, LongLat p2, List<Polygon> noFlyZones) {
+        Point point1 = Point.fromLngLat(p1.longitude, p1.latitude);
+        Point point2 = Point.fromLngLat(p2.longitude, p2.latitude);
+
+        for (Polygon polygon: noFlyZones) {
+            if (GeoJsonUtils.pathInterceptPolygon(point1, point2, polygon)) return true;
+        }
+
+        return false;
     }
 }

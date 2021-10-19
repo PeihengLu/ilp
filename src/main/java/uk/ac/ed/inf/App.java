@@ -42,9 +42,9 @@ public class App
 
     public static void main( String[] args )
     {
-
-        FeatureCollection nfzRedraw;
-
+        int totalOrders ;
+        int orderSent = 0;
+        int totalCost = 0;
         // first add the starting and ending point Appleton Tower into our
         // points of interests
         locations.put("Appleton Tower", LongLat.AT);
@@ -88,7 +88,6 @@ public class App
                 noFlyZones.add((Polygon) f.geometry());
             }
         }
-        System.out.println("We have " + noFlyZones.size() + " no-fly zones");
 
 
         // get the landmarks
@@ -132,23 +131,13 @@ public class App
         if (!getOrders(orderNoDeliver)) return;
 
         int S = locationNames.size();
-
-        System.out.println(locationNames);
-
         graph = new Integer[S][S];
         next = new Integer[S][S];
 
         populateGraph();
-
-        System.out.println(Arrays.deepToString(graph));
-
         shortestPath();
 
-        System.out.println(Arrays.deepToString(graph));
-
-        for (Order order: orders) {
-            System.out.println(order.orderNo);
-        }
+        totalOrders = orders.size();
         // go through all the orders and plan the path for each
         while (!orders.isEmpty()) {
             path.clear();
@@ -212,6 +201,9 @@ public class App
             drone.hover();
             drone.planNextMove();
             drone.makeNextMove();
+
+            orderSent ++;
+            totalCost += curr.deliveryCost;
         }
 
 
@@ -227,6 +219,7 @@ public class App
 
         LineString result = LineString.fromLngLats(pathRec);
         GeoJsonUtils.writeGeoJson(FeatureCollection.fromFeature(Feature.fromGeometry(result)), outputFile);
+        System.out.printf("Out of %d orders, %d orders were sent, made %d pence, and returned to AT? %b\n", totalOrders, orderSent, totalCost, drone.getCurrLoc().closeTo(LongLat.AT));
     }
 
 
@@ -242,7 +235,6 @@ public class App
 
             if (checkNFZ(drone.getCurrLoc(), drone.getNextLoc())) {
                 clockCounterclock(drone.getCurrLoc(), drone.getAngle());
-                System.out.println("move fixed");
             }
 //            System.out.println("(" + drone.getCurrLoc().longitude + ", " + drone.getCurrLoc().latitude +")");
 
@@ -284,19 +276,20 @@ public class App
                     turn ++;
                 }
             }
-        }
-        while (true) {
-            if (!checkNFZ(currLoc, currLoc.nextPosition(angle + turn * 10))) {
-                drone.setIntercept(1);
-                drone.setNextLoc(currLoc.nextPosition(angle + turn * 10));
-                break;
+        } else {
+            while (true) {
+                if (!checkNFZ(currLoc, currLoc.nextPosition(angle + turn * 10))) {
+                    drone.setIntercept(1);
+                    drone.setNextLoc(currLoc.nextPosition(angle + turn * 10));
+                    break;
+                }
+                if (!checkNFZ(currLoc, currLoc.nextPosition(angle - turn * 10))) {
+                    drone.setIntercept(-1);
+                    drone.setNextLoc(currLoc.nextPosition(angle - turn * 10));
+                    break;
+                }
+                turn++;
             }
-            if (!checkNFZ(currLoc, currLoc.nextPosition(angle - turn * 10))) {
-                drone.setIntercept(-1);
-                drone.setNextLoc(currLoc.nextPosition(angle - turn * 10));
-                break;
-            }
-            turn++;
         }
     }
 
@@ -336,7 +329,7 @@ public class App
                 return false;
             }
 
-            List<Shop> shops = new ArrayList<Shop>(menus.getShopped());
+            List<Shop> shops = new ArrayList<>(menus.getShopped());
             // create an Order object containing the information just acquired
             // and add it to the list of orders on the specified date
             Order newOrder = new Order(orderNo, w3w, items, deliverTo, shops, deliveryCost);
@@ -356,7 +349,7 @@ public class App
     private static boolean checkNFZ(LongLat p1, LongLat p2) {
         if (!p2.isConfined()) return true;
         Point point1 = Point.fromLngLat(p1.longitude, p1.latitude);
-        Point point2 = Point.fromLngLat(p2.longitude, p1.latitude);
+        Point point2 = Point.fromLngLat(p2.longitude, p2.latitude);
 
         for (Polygon polygon: noFlyZones) {
             if (GeoJsonUtils.pathInterceptPolygon(point1, point2, polygon)) return true;
@@ -372,7 +365,7 @@ public class App
                 String locA = locationNames.get(i);
                 String locB = locationNames.get(j);
                 int weight = (int) Math.ceil(locations.get(locA).distanceTo(locations.get(locB)) * 1.01 / 0.00015) + 1;
-                if (checkNFZ(locations.get(locA), locations.get(locB))) weight = weight * 10;
+                if (checkNFZ(locations.get(locA), locations.get(locB))) weight = weight * 2;
                 graph[i][j] = weight;
                 graph[j][i] = weight;
             }

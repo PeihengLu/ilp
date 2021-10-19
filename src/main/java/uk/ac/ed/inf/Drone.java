@@ -28,7 +28,7 @@ public class Drone {
         this.currLoc = currLoc;
         this.currLocName = locName;
         this.arrived = false;
-        this.moves = 2000;
+        this.moves = 1500;
     }
 
 

@@ -65,11 +65,10 @@ public class GeoJsonUtils {
      * @return true if the path intercept with the outer perimeter of the no-fly zone
      */
     public static boolean pathInterceptPolygon(Point p1, Point p2, Polygon polygon) {
-        LineString outer = polygon.outer();
-        List<Point> lines = outer.coordinates();
+        List<Point> lines = polygon.coordinates().get(0);
         // check the interception of the path with all line segments of the perimeter
-        for (int i = 0; i < lines.size(); i ++) {
-            if (checkIntercept(p1, p2, lines.get(i), lines.get((i + 1) % lines.size()))) return true;
+        for (int i = 0; i < lines.size() - 1; i ++) {
+            if (checkIntercept(p1, p2, lines.get(i), lines.get((i + 1)))) return true;
         }
         return false;
     }
