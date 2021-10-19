@@ -60,8 +60,6 @@ public class DatabaseUtils {
      */
     public List<String[]> getOrders(String date) {
         List<String[]> orderInfo = new ArrayList<>();
-        // store the order number and delivery address of one order
-        String[] order = new String[2];
 
         try {
             Connection connection = DriverManager.getConnection(this.server);
@@ -71,6 +69,8 @@ public class DatabaseUtils {
 
             ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
+                // store the order number and delivery address of one order
+                String[] order = new String[2];
                 order[0] = resultSet.getString("orderNo");
                 order[1] = resultSet.getString("deliverTo");
                 orderInfo.add(order);
@@ -110,5 +110,64 @@ public class DatabaseUtils {
         }
 
         return items;
+    }
+
+
+    /**
+     * write into flightPath table
+     * @param orderNo
+     * @param from
+     * @param angle
+     * @param to
+     */
+    public boolean storePath(String orderNo, LongLat from, int angle, LongLat to) {
+        try {
+            Connection connection = DriverManager.getConnection(server);
+            PreparedStatement preparedStatement = connection.prepareStatement(
+                    "insert into flightpath values (?, ?, ?, ?, ?, ?)"
+            );
+
+            preparedStatement.setString(1, orderNo);
+            preparedStatement.setDouble(2, from.longitude);
+            preparedStatement.setDouble(3, from.latitude);
+            preparedStatement.setInt(4, angle);
+            preparedStatement.setDouble(5, to.longitude);
+            preparedStatement.setDouble(6, to.latitude);
+
+            preparedStatement.execute();
+        } catch (SQLException ex) {
+            System.err.println("Problem with db server connection");
+            System.err.println(ex.getMessage());
+            return false;
+        }
+        return true;
+    }
+
+
+    /**
+     * write into the deliveries table
+     * @param orderNo
+     * @param deliveredTo
+     * @param cost
+     * @return
+     */
+    public boolean storeOrder(String orderNo, String deliveredTo, int cost) {
+        try {
+            Connection connection = DriverManager.getConnection(server);
+            PreparedStatement preparedStatement = connection.prepareStatement(
+                    "insert into deliveries values (?, ?, ?)"
+            );
+
+            preparedStatement.setString(1, orderNo);
+            preparedStatement.setString(2, deliveredTo);
+            preparedStatement.setInt(3, cost);
+
+            preparedStatement.execute();
+        } catch (SQLException ex) {
+            System.err.println("Problem with db server connection");
+            System.err.println(ex.getMessage());
+            return false;
+        }
+        return true;
     }
 }
