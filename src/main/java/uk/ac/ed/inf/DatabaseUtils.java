@@ -1,6 +1,8 @@
 package uk.ac.ed.inf;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DatabaseUtils {
     /** the address of the database server */
@@ -50,13 +52,63 @@ public class DatabaseUtils {
 
     }
 
-    public String getOrders(String date) {
+
+    /**
+     *
+     * @param date the data of order
+     * @return a list of lists containing order number and delivery address
+     */
+    public List<String[]> getOrders(String date) {
+        List<String[]> orderInfo = new ArrayList<>();
+        // store the order number and delivery address of one order
+        String[] order = new String[2];
+
         try {
             Connection connection = DriverManager.getConnection(this.server);
-        } catch (SQLException e) {
+            final String orderQuery = "select * from orders where deliveryDate=(?)";
+            PreparedStatement preparedStatement = connection.prepareStatement(orderQuery);
+            preparedStatement.setString(1, date);
+
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                order[0] = resultSet.getString("orderNo");
+                order[1] = resultSet.getString("deliverTo");
+                orderInfo.add(order);
+            }
+        } catch (SQLException ex) {
             System.err.println("Problem with db server connection");
+            System.err.println(ex.getMessage());
+            return null;
         }
 
-        return null;
+        return orderInfo;
+    }
+
+
+    /**
+     * get the items of an order
+     * @param orderNo order number of the order
+     * @return the items on that order
+     */
+    public List<String> getItems(String orderNo) {
+        List<String> items = new ArrayList<>();
+
+        try {
+            Connection connection = DriverManager.getConnection(this.server);
+            final String itemQuery = "select * from orderDetails where orderNo=(?)";
+            PreparedStatement preparedStatement = connection.prepareStatement(itemQuery);
+            preparedStatement.setString(1, orderNo);
+
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                items.add(resultSet.getString("item"));
+            }
+        } catch (SQLException ex) {
+            System.err.println("Problem with db server connection");
+            System.err.println(ex.getMessage());
+            return null;
+        }
+
+        return items;
     }
 }

@@ -14,9 +14,9 @@ import java.util.*;
  */
 public class Menus {
     /** record the shop where a food item is sold (itemName, shop) */
-    private final HashMap<String, Shop> provider = new HashMap<>();
+    public final HashMap<String, Shop> provider = new HashMap<>();
     /** record the prices of food items (itemName, price) */
-    private final HashMap<String, Integer> prices = new HashMap<>();
+    public final HashMap<String, Integer> prices = new HashMap<>();
     /** record the shops that's visited for one order */
     private HashSet<Shop> shopped = new HashSet<>();
 
@@ -73,7 +73,7 @@ public class Menus {
         // an order can only have [1, 4] items
         if (items.length < 1 || items.length > 4) return -1;
         // record the name of shops visited for one order
-        shopped = new HashSet<>();
+        shopped.clear();
         // 50p of delivery charges
         int val = 50;
 
@@ -87,7 +87,10 @@ public class Menus {
         }
         // if items from one order is composed of food from more than two shops, it's
         // against our delivery policy
-        if (shopped.size() > 2) return -1;
+        if (shopped.size() > 2) {
+            System.err.println("an order shouldn't have items from more than 2 shops");
+            return -1;
+        }
         return val;
     }
 

@@ -6,20 +6,26 @@ import com.google.gson.Gson;
 /**
  * class providing decoding functionality for what three words address
  */
-public class W3W {
+public class W3WUtils {
+    public final String server;
+
+
+    public W3WUtils(String name, String port) {
+        // address of the web server storing location information encoded in the
+        // three words
+        this.server = "HTTP://" + name + ":" + port + "/words/";;
+    }
+
+
     /**
      * decode a w3w formatted location and parse it into a Location object holding all
      * the information stored on the server
-     * @param name the machine name of the online server
-     * @param port the port of connection to the online server
      * @param word the w3w format location
      * @return null if error happens at connection or parsing, otherwise the Location object containing all the information from the server
      */
-    public static Location convertW3W(String name, String port, String word) {
+    public Location convertW3W(String word) {
         String[] threeWords = word.split("\\.");
-        // address of the web server storing location information encoded in the
-        // three words
-        String url = "HTTP://" + name + ":" + port + "/words/";
+        String url = server;
         for (String w: threeWords) {
             url += w + "/";
         }

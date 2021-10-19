@@ -20,8 +20,6 @@ public class GeoJsonUtils {
         // location of the menus file on the server
         noFlyZone = server + "no-fly-zones.geojson";
         landmarks = server + "landmarks.geojson";
-        System.out.println(noFlyZone);
-        System.out.println(landmarks);
     }
 
     public static List<Feature> readGeoJson(String url) {

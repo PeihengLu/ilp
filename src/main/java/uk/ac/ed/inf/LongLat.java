@@ -11,6 +11,8 @@ public class LongLat {
     public final double latitude;
 
     // Below are some possibly useful coordinates of key locations
+    /** Appleton Tower */
+    public static final LongLat AT = new LongLat(-3.186874, 55.944494);
     /** Forest Hill on Top Left */
     public static final LongLat FH = new LongLat(-3.192473, 55.946233);
     /** KFC on Top Right */
@@ -34,6 +36,16 @@ public class LongLat {
     public LongLat(double longitude, double latitude) {
         this.longitude = longitude;
         this.latitude = latitude;
+    }
+
+    /**
+     * another constructor to convert LongLatSimple object into LongLat for a
+     * uniform representation of coordinates
+     * @param longLatSimple the LongLatSimple object generated with Gson parsing
+     */
+    public LongLat(LongLatSimple longLatSimple) {
+        this.longitude = longLatSimple.lng;
+        this.latitude = longLatSimple.lat;
     }
 
 

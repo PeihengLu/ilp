@@ -199,10 +199,11 @@ public class AppTest {
     @Test
     public void testW3WParsing() {
         String words = "pest.round.peanut";
-        Location loc = W3W.convertW3W("localhost", "9898", words);
+        W3WUtils wUtils = new W3WUtils("localhost", "9898");
+        Location loc = wUtils.convertW3W(words);
         assertNotNull(loc);
-        assertEquals(-3.186103, loc.getCoordinates().lng, 0.0);
-        assertEquals(55.944656, loc.getCoordinates().lat, 0.0);
+        assertEquals(-3.186103, loc.coordinates.lng, 0.0);
+        assertEquals(55.944656, loc.coordinates.lat, 0.0);
     }
 
     @Test
