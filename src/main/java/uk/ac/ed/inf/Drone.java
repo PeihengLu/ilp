@@ -1,11 +1,16 @@
 package uk.ac.ed.inf;
 
+import com.mapbox.geojson.Point;
+import java.util.*;
+
 public class Drone {
     /** the current location of the drone */
     private LongLat currLoc;
     private String currLocName;
     /** angle to reach the next location */
     private int angle;
+    /** angle used last time */
+    private int anglePre;
     /** where to go next*/
     private LongLat nextLoc;
     /** the target of the current lag of journey */
@@ -13,11 +18,19 @@ public class Drone {
     private String targetLocName;
     /** whether the drone is close to target location */
     private boolean arrived;
+    // todo: check if necessary
     /** whether the drone's planned move has intercepted with no-fly zones
      * before reaching current target location */
     private int intercept;
     /** how many moves the drone got left */
     private int moves;
+
+    /** the name of the locations that the drone needs to follow for current order */
+    private final Queue<String> path = new LinkedList<>();
+    /** the waypoints (all existing locations) the drone needs to follow for a target location */
+    private Queue<String> currPath = new LinkedList<>();
+    /** store the points the drone has taken and write it to the output geojson file */
+    private List<Point> pathRec = new ArrayList<>();
 
 
     /**
@@ -81,7 +94,12 @@ public class Drone {
 
         double ang = Math.toDegrees(Math.atan2(targetLoc.latitude - currLoc.latitude, targetLoc.longitude - currLoc.longitude));
         if (ang < 0) ang += 360;
-        angle = (int) (Math.round(ang / 10) * 10);
+        angle = roundToTen(ang);
+    }
+
+
+    public static int roundToTen(double toRound) {
+        return (int) (Math.round(toRound / 10) * 10);
     }
 
     public void planNextMove() {
@@ -96,8 +114,42 @@ public class Drone {
         if (currLoc.closeTo(targetLoc)) {
             arrived = true;
             currLocName = targetLocName;
+            anglePre = angle;
         }
         moves --;
+    }
+
+
+    public void addToPath(String name) {
+        path.add(name);
+    }
+
+    public void addToCurrPath(String name) {
+        currPath.add(name);
+    }
+
+    public void addToPathRec(Point point) {
+        pathRec.add(point);
+    }
+
+    public boolean isPathEmpty () {
+        return path.isEmpty();
+    }
+
+    public boolean isCurrPathEmpty () {
+        return currPath.isEmpty();
+    }
+
+    public String getNextLocForOrder() {
+        return path.poll();
+    }
+
+    public String getNextWaypointForLag() {
+        return currPath.poll();
+    }
+
+    public List<Point> getPathRecord() {
+        return pathRec;
     }
 
     /** return how many moves the drone got left */
@@ -131,5 +183,9 @@ public class Drone {
 
     public int getIntercept() {
         return intercept;
+    }
+
+    public int getAnglePre() {
+        return anglePre;
     }
 }

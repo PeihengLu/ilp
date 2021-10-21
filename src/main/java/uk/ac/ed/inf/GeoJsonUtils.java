@@ -22,6 +22,12 @@ public class GeoJsonUtils {
         landmarks = server + "landmarks.geojson";
     }
 
+
+    /**
+     * read a geojson file from the server
+     * @param url the address of the file to read
+     * @return null if error occurs at connection,
+     */
     public static List<Feature> readGeoJson(String url) {
         // start HTTP connection with the server
         ConnectServer connection = new ConnectServer(url);
