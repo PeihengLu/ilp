@@ -34,7 +34,7 @@ public class Menus {
         // location of the menus file on the server
         String AddressToMenu = server + "/menus/menus.json";
         // start HTTP connection with the server
-        ConnectServer connection = new ConnectServer(AddressToMenu);
+        serverUtils connection = new serverUtils(AddressToMenu);
 
         // the file content read from the menus json file on the web server
         String menus = connection.readStringFromUrl();

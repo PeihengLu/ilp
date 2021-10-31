@@ -14,15 +14,25 @@ public class Map {
     /** names of all locations of interests, used for composing and indexing the
      * graph to search on */
     public final List<String> locationNames = new ArrayList<>();
-    /** Order objects representing the orders on that day, ordered by delivery cost*/
-    public final Queue<Order> orders = new PriorityQueue<>(Collections.reverseOrder());
     /** the graph for the pathfinding algorithm to search on, it will store the shortest
      * distance between two nodes after running the shortest path algorithm*/
     public Integer[][] graph;
     /** storing the vertices in shortest path algorithm for us to reconstruct the path */
     public Integer[][] next;
+
+    public Boolean[][] intersect;
     /** no-fly zones */
     public final List<Polygon> noFlyZones = new ArrayList<Polygon>();
+
+    /**
+     * initialize the map object by adding the first known point of interest Appleton Tower
+     */
+    public Map() {
+        // first add the starting and ending point Appleton Tower into our
+        // points of interests
+        this.locations.put("Appleton Tower", LongLat.AT);
+        this.locationNames.add("Appleton Tower");
+    }
 
 
     /**
@@ -33,11 +43,23 @@ public class Map {
      */
     public void populateGraph() {
         for (int i = 0; i < locationNames.size(); i ++) {
-            for (int j = i + 1; j < locationNames.size(); j ++) {
+            for (int j = i; j < locationNames.size(); j ++) {
+                if (i == j) {
+                    graph[i][j] = 0;
+                    next[i][j] = i;
+                    intersect[i][j] = false;
+                }
                 String locA = locationNames.get(i);
                 String locB = locationNames.get(j);
                 int weight = (int) Math.ceil(locations.get(locA).distanceTo(locations.get(locB)) * 1.01 / 0.00015) + 1;
-                if (checkNFZ(locations.get(locA), locations.get(locB))) weight = weight * 2;
+                if (intersectNFZ(locations.get(locA), locations.get(locB))) {
+                    weight = weight * 2;
+                    intersect[i][j] = true;
+                    intersect[j][i] = true;
+                } else {
+                    intersect[i][j] = false;
+                    intersect[j][i] = false;
+                }
                 graph[i][j] = weight;
                 graph[j][i] = weight;
             }
@@ -81,7 +103,7 @@ public class Map {
      * @param p2 target location
      * @return false if it doesn't go into the no-fly zones or confinement area, true otherwise
      */
-    public boolean checkNFZ(LongLat p1, LongLat p2) {
+    public boolean intersectNFZ(LongLat p1, LongLat p2) {
         if (!p2.isConfined()) return true;
         Point point1 = Point.fromLngLat(p1.longitude, p1.latitude);
         Point point2 = Point.fromLngLat(p2.longitude, p2.latitude);
@@ -93,9 +115,15 @@ public class Map {
         return false;
     }
 
-
+    /**
+     * get the distance for the drone needs to cover to move between two locations
+     * or a very pessimistic estimation of the distance if the path intersect with
+     * no-fly zones
+     * @param locA the name of one location
+     * @param locB the name of the other location
+     * @return the distance for drone to cover to travel between locA and locB
+     */
     public int getDistance(String locA, String locB) {
         return graph[locationNames.indexOf(locA)][locationNames.indexOf(locB)];
     }
-
 }

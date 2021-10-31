@@ -91,4 +91,13 @@ public class LongLat {
         if (angle == -999) return this;
         return new LongLat(this.longitude + distance*Math.cos(Math.toRadians(angle)), this.latitude + distance*Math.sin(Math.toRadians(angle)));
     }
+
+    /**
+     * used by A start algorithm to determine whether this location is visited or not
+     * @param other the other location to compare with
+     * @return true if distance between this and other is less than 0.00003
+     */
+    public boolean veryCloseTo(LongLat other) {
+        return distanceTo(other) < threshold / 5;
+    }
 }

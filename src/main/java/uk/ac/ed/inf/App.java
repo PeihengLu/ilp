@@ -19,22 +19,16 @@ public class App
     private static Menus menus;
     /** drone object to store drone's location and energy information, also the planned path for it to follow*/
     private static Drone drone;
-    /** map object storing useful locations for orders on the specified date */
-    private static Map map = new Map();
     private static final Queue<Order> orders = new PriorityQueue<>(Collections.reverseOrder());
 
     private static String outputFile;
     private static String outputFileFailed;
 
-    public static void main( String[] args )
+    public static void main( String[] args)
     {
         int totalOrders ;
         int orderSent = 0;
         int totalCost = 0;
-        // first add the starting and ending point Appleton Tower into our
-        // points of interests
-        map.locations.put("Appleton Tower", LongLat.AT);
-        map.locationNames.add("Appleton Tower");
 
 
         if (args.length != 5) {
@@ -60,8 +54,10 @@ public class App
         geoJsonUtils = new GeoJsonUtils(name, port);
         databaseUtils = new DatabaseUtils(name, dbPort, "derbyDB");
         wUtils = new W3WUtils(name, port);
-        // initialize the Drone at appleton tower
-        drone = new Drone(LongLat.AT, "Appleton Tower");
+
+        // initialize the Drone at appleton tower with fully initialized map and dbUtil to
+        // record the path for A star
+        drone = new Drone(LongLat.AT, "Appleton Tower", databaseUtils);
 
 
         // get the no-fly zones
@@ -85,11 +81,9 @@ public class App
             return;
         }
 
-        int S = map.locationNames.size();
-        map.graph = new Integer[S][S];
-        map.next = new Integer[S][S];
-        map.populateGraph();
-        map.shortestPath();
+        int s = drone.getLocationNames().size();
+        drone.initializeGraph(s);
+
 
         totalOrders = orders.size();
         // go through all the orders and plan the path for each
@@ -106,7 +100,7 @@ public class App
             databaseUtils.storeOrder(currOrder.orderNo, currOrder.deliverTo.words, currOrder.deliveryCost);
             System.out.println("Starting order " + currOrder.orderNo);
 
-            if (followPathForOrder(currOrder)) {
+            if (!followPathForOrder(currOrder)) {
                 System.err.printf("Failed to complete order %s due to planning error\n", currOrder.orderNo);
                 return;
             }
@@ -135,7 +129,7 @@ public class App
         }
         for (Feature f: nfz) {
             if (f.geometry() instanceof Polygon) {
-                map.noFlyZones.add((Polygon) f.geometry());
+                drone.addNFZ((Polygon) f.geometry());
             }
         }
         return true;
@@ -154,8 +148,7 @@ public class App
                 System.err.println("Problem reading W3W address file");
                 return false;
             }
-            map.locations.put(landmark.getStringProperty("name"), new LongLat(loc.coordinates));
-            map.locationNames.add(landmark.getStringProperty("name"));
+            drone.addLocation(landmark.getStringProperty("name"), new LongLat(loc.coordinates));
         }
         return true;
     }
@@ -173,40 +166,11 @@ public class App
                 System.err.println("Problem reading W3W address file");
                 return false;
             }
-            if (!map.locations.containsKey(shop.getName())) {
-                map.locations.put(shop.getName(), new LongLat(loc.coordinates));
-                map.locationNames.add(shop.getName());
+            if (!drone.getLocations().containsKey(shop.getName())) {
+                drone.addLocation(shop.getName(), new LongLat(loc.coordinates));
             }
         }
         return true;
-    }
-
-    /**
-     * follow the pre-planned path for an order
-     * @param currOrder the order number of the order currently taken
-     * @return
-     */
-    private static boolean followPathForOrder(Order currOrder) {
-        while (!drone.isPathEmpty()) {
-            String keypoint = drone.getNextLocForOrder();
-            System.out.println("Going to " + keypoint);
-            findPath(drone.getCurrLocName(), keypoint);
-            // follow the path of one lag of the journey to reach a keypoint in current order
-            while (!drone.isCurrPathEmpty()) {
-                String targetLoc = drone.getNextWaypointForLag();
-                if (!targetLoc.equals(keypoint)) {
-                    System.out.println("Taking a detour through " + targetLoc);
-                }
-                drone.setTargetLoc(map.locations.get(targetLoc), targetLoc);
-
-                if (!followOneLag(currOrder.orderNo)) {
-                    LineString resultFailed = LineString.fromLngLats(drone.getPathRecord());
-                    GeoJsonUtils.writeGeoJson(FeatureCollection.fromFeature(Feature.fromGeometry(resultFailed)), outputFileFailed);
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
 
@@ -214,13 +178,14 @@ public class App
      * return the drone to Appleton tower
      * @return true if the drone made it back to the Tower, false otherwise
      */
+    // todo: add AStar
     private static boolean returnToAppleton() {
         // fly back to Appleton tower
-        findPath(drone.getCurrLocName(), "Appleton Tower");
+        drone.findPath(drone.getCurrLocName(), "Appleton Tower");
         // follow the path to reach Appleton
-        while (!drone.isCurrPathEmpty()) {
+        while (!drone.isWaypointsEmpty()) {
             String targetLoc = drone.getNextWaypointForLag();
-            drone.setTargetLoc(map.locations.get(targetLoc), targetLoc);
+            drone.setTargetLoc(drone.getLocations().get(targetLoc), targetLoc);
 
             if (!followOneLag("NoOrder")) {
                 return true;
@@ -246,19 +211,19 @@ public class App
             String shopAName = currOrder.shops.get(0).getName();
             String shopBName = currOrder.shops.get(1).getName();
 
-            if (map.getDistance(start, shopAName) + (map.getDistance(end, shopBName)) >
-                    map.getDistance(start, shopBName) + (map.getDistance(end, shopAName))) {
+            if (drone.getDistance(start, shopAName) + (drone.getDistance(end, shopBName)) >
+                    drone.getDistance(start, shopBName) + (drone.getDistance(end, shopAName))) {
                 // 0 is the index of Appleton Tower in locationNames, make sure the drone can still return after the order
                 // if not, check the next order
-                if (map.getDistance(start, shopBName) + map.getDistance(end, shopAName) + map.getDistance(shopAName, shopBName)
-                        + map.getDistance(end, "Appleton Tower") > drone.getMoves()) {
+                if (drone.getDistance(start, shopBName) + drone.getDistance(end, shopAName) + drone.getDistance(shopAName, shopBName)
+                        + drone.getDistance(end, "Appleton Tower") > drone.getMoves()) {
                     return true;
                 }
                 drone.addToPath(shopBName);
                 drone.addToPath(shopAName);
             } else {
-                if (map.getDistance(start, shopAName) + map.getDistance(end, shopBName) + map.getDistance(shopAName, shopBName)
-                        + map.getDistance(end, "Appleton Tower") > drone.getMoves()) {
+                if (drone.getDistance(start, shopAName) + drone.getDistance(end, shopBName) + drone.getDistance(shopAName, shopBName)
+                        + drone.getDistance(end, "Appleton Tower") > drone.getMoves()) {
                     return true;
                 }
                 drone.addToPath(shopAName);
@@ -267,8 +232,8 @@ public class App
             drone.addToPath(end);
         } else {
             String shopName = currOrder.shops.get(0).getName();
-            if (map.getDistance(start, shopName) + map.getDistance(shopName, end)
-                    + map.getDistance(end, "Appleton Tower") > drone.getMoves()) {
+            if (drone.getDistance(start, shopName) + drone.getDistance(shopName, end)
+                    + drone.getDistance(end, "Appleton Tower") > drone.getMoves()) {
                 return true;
             }
             drone.addToPath(shopName);
@@ -277,9 +242,45 @@ public class App
         return false;
     }
 
+    /**
+     * follow the pre-planned path for an order
+     * @param currOrder the order number of the order currently taken
+     * @return true if no errors occurred on the path
+     */
+    private static boolean followPathForOrder(Order currOrder) {
+        while (!drone.isPathEmpty()) {
+            String keypoint = drone.getNextLocForOrder();
+            System.out.println("Going to " + keypoint);
+            int intersect = drone.findPath(drone.getCurrLocName(), keypoint);
+            if (intersect == -1) {
+                System.err.println("Problem retrieving the path");
+            }
+            // if any part of the path intersect with no-fly zones, use A star instead
+            if (intersect == 1) {
+                Stack<Integer> plannedPath = drone.planAStar(drone.getLocations().get(keypoint));
+                drone.moveAStar(currOrder.orderNo, plannedPath);
+            }
+
+            // follow the path of one lag of the journey to reach a keypoint in current order
+            while (!drone.isWaypointsEmpty()) {
+                String targetLoc = drone.getNextWaypointForLag();
+                if (!targetLoc.equals(keypoint)) {
+                    System.out.println("Taking a detour through " + targetLoc);
+                }
+                drone.setTargetLoc(drone.getLocations().get(targetLoc), targetLoc);
+
+                if (!followOneLag(currOrder.orderNo)) {
+                    LineString resultFailed = LineString.fromLngLats(drone.getPathRecord());
+                    GeoJsonUtils.writeGeoJson(FeatureCollection.fromFeature(Feature.fromGeometry(resultFailed)), outputFileFailed);
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 
     /**
-     * following the path to one of the way points to a point of interest (the shop or drop of point to reach)
+     * following the path to one of the waypoints
      * @param orderNo the order number of the current order the drone is working on
      * @return false if error
      */
@@ -293,7 +294,7 @@ public class App
                 return false;
             }
 
-            if (map.checkNFZ(drone.getCurrLoc(), drone.getNextLoc())) {
+            if (drone.checkNFZ(drone.getCurrLoc(), drone.getNextLoc())) {
                 clockCounterclock(drone.getCurrLoc(), drone.getAngle());
             }
             // store flight path into the database
@@ -301,8 +302,8 @@ public class App
                 System.err.println("Problem writing to flightpath table");
                 return false;
             }
-            drone.addToPathRec(Point.fromLngLat(drone.getCurrLoc().longitude, drone.getCurrLoc().latitude));
             drone.makeNextMove();
+            drone.addToPathRec(drone.getCurrLoc());
         }
         return true;
     }
@@ -316,40 +317,17 @@ public class App
      */
     private static void clockCounterclock(LongLat currLoc, int angle) {
         int turn = 1;
-//        if (drone.getIntercept() != 0) {
-//            double angleWithMomentum = (angle * 0.1 + drone.getAnglePre() * 0.9);
-//            if (drone.getIntercept() == 1) {
-//                while (true) {
-//                    if (!checkNFZ(currLoc, currLoc.nextPosition(Drone.roundToTen( angleWithMomentum) + turn * 10))) {
-//                        drone.setNextLoc(currLoc.nextPosition(Drone.roundToTen( angleWithMomentum) + turn * 10));
-//                        break;
-//                    }
-//                    turn ++;
-//                }
-//            } else {
-//                while (true) {
-//                    if (!checkNFZ(currLoc, currLoc.nextPosition(Drone.roundToTen(angleWithMomentum) - turn * 10))) {
-//                        drone.setNextLoc(currLoc.nextPosition(Drone.roundToTen(angleWithMomentum) - turn * 10));
-//                        break;
-//                    }
-//                    turn ++;
-//                }
-//            }
-//        } else {
             while (true) {
-                if (!map.checkNFZ(currLoc, currLoc.nextPosition(angle + turn * 10))) {
-                    drone.setIntercept(1);
+                if (!drone.checkNFZ(currLoc, currLoc.nextPosition(angle + turn * 10))) {
                     drone.setNextLoc(currLoc.nextPosition(angle + turn * 10));
                     break;
                 }
-//                if (!checkNFZ(currLoc, currLoc.nextPosition(angle - turn * 10))) {
-//                    drone.setIntercept(-1);
-//                    drone.setNextLoc(currLoc.nextPosition(angle - turn * 10));
-//                    break;
-//                }
+                if (!drone.checkNFZ(currLoc, currLoc.nextPosition(angle - turn * 10))) {
+                    drone.setNextLoc(currLoc.nextPosition(angle - turn * 10));
+                    break;
+                }
                 turn++;
             }
-//        }
     }
 
 
@@ -377,9 +355,8 @@ public class App
                 System.err.println("Problem reading W3W address file");
                 return false;
             }
-            if (!map.locations.containsKey(w3w)) {
-                map.locations.put(w3w, new LongLat(deliverTo.coordinates));
-                map.locationNames.add(w3w);
+            if (!drone.getLocations().containsKey(w3w)) {
+                drone.addLocation(w3w, new LongLat(deliverTo.coordinates));
             }
 
             List<String> items = databaseUtils.getItems(orderNo);
@@ -401,28 +378,5 @@ public class App
             orders.add(newOrder);
         }
         return true;
-    }
-
-
-    /**
-     * recover the path from next
-     * @param locA
-     * @param locB
-     */
-    private static void findPath(String locA, String locB) {
-        int indA = map.locationNames.indexOf(locA);
-        int indB = map.locationNames.indexOf(locB);
-
-        if (map.next[indA][indB] == null) {
-            return;
-        }
-
-        // todo: figure out what happened here
-        while (indA != indB) {
-            indA = map.next[indA][indB];
-            drone.addToCurrPath(map.locationNames.get(indA));
-        }
-//
-//        currPath.add(locationNames.get(indB));
     }
 }

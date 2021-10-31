@@ -2,7 +2,6 @@ package uk.ac.ed.inf;
 
 import com.mapbox.geojson.*;
 
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
@@ -30,7 +29,7 @@ public class GeoJsonUtils {
      */
     public static List<Feature> readGeoJson(String url) {
         // start HTTP connection with the server
-        ConnectServer connection = new ConnectServer(url);
+        serverUtils connection = new serverUtils(url);
 
         // the file content read from the menus json file on the web server
         String content = connection.readStringFromUrl();

@@ -17,13 +17,13 @@ public class Order implements Comparable<Order> {
 
 
     /**
-     *
-     * @param orderNo
-     * @param locationName
-     * @param items
-     * @param deliverTo
-     * @param shops
-     * @param deliveryCost
+     * initialize the order object
+     * @param orderNo the order number
+     * @param locationName the name of delivery address of the order (the w3w representation of the address)
+     * @param items the items contained by the order
+     * @param deliverTo the coordinate of the delivery address
+     * @param shops the list of the shops that needs to be visited for an order
+     * @param deliveryCost how much the user needs to pay for this order
      */
     public Order(String orderNo, String locationName, List<String> items, Location deliverTo, List<Shop> shops, int deliveryCost) {
         this.orderNo = orderNo;
@@ -34,7 +34,11 @@ public class Order implements Comparable<Order> {
         this.deliveryCost = deliveryCost;
     }
 
-
+    /**
+     * compare the orders by delivery cost only
+     * @param o the other order to compare to
+     * @return the difference between the delivery cost of this and other order
+     */
     @Override
     public int compareTo(Order o) {
         return deliveryCost - o.deliveryCost;
