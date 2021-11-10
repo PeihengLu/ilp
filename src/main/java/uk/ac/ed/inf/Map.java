@@ -53,7 +53,7 @@ public class Map {
                 String locB = locationNames.get(j);
                 int weight = (int) Math.ceil(locations.get(locA).distanceTo(locations.get(locB)) * 1.01 / 0.00015) + 1;
                 if (intersectNFZ(locations.get(locA), locations.get(locB))) {
-                    weight = weight * 2;
+                    weight = weight * 3;
                     intersect[i][j] = true;
                     intersect[j][i] = true;
                 } else {

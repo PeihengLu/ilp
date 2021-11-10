@@ -1,8 +1,5 @@
 package uk.ac.ed.inf;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * The Node object to use
  * if two nodes are 'very close' to each other (distance < 0.00003 degree), they equals

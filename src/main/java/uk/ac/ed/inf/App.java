@@ -3,6 +3,7 @@ package uk.ac.ed.inf;
 import com.mapbox.geojson.*;
 import com.mapbox.geojson.Polygon;
 
+import java.sql.Time;
 import java.util.*;
 
 /**
@@ -26,11 +27,7 @@ public class App
 
     public static void main( String[] args)
     {
-        int totalOrders ;
-        int orderSent = 0;
-        int totalCost = 0;
-
-
+        long startTime = System.nanoTime();
         if (args.length != 5) {
             System.err.println("You should enter 5 arguments: day, month, year, webserver port and database port!");
         }
@@ -85,40 +82,18 @@ public class App
         drone.initializeGraph(s);
 
 
-        totalOrders = orders.size();
-        // go through all the orders and plan the path for each
-        while (!orders.isEmpty()) {
-            Order currOrder = orders.poll();
-            // check if an order is available and plan its path if it is
-            if (checkAvailability(currOrder)) {
-                System.out.printf("Apologies, cannot finish order %s, not enough power left, lost %d pence\n", currOrder.orderNo, currOrder.deliveryCost);
-                continue;
-            }
-
-            // if the program gets here, then the order will be carried out,
-            // so store it to our orders database
-            databaseUtils.storeOrder(currOrder.orderNo, currOrder.deliverTo.words, currOrder.deliveryCost);
-            System.out.println("Starting order " + currOrder.orderNo);
-
-            if (!followPathForOrder(currOrder)) {
-                System.err.printf("Failed to complete order %s due to planning error\n", currOrder.orderNo);
-                return;
-            }
-
-            drone.hover();
-            drone.planNextMove();
-            drone.makeNextMove();
-
-            orderSent ++;
-            totalCost += currOrder.deliveryCost;
+        if (!drone.deliverOrders(orders)){
+            GeoJsonUtils.writeGeoJson(FeatureCollection.fromFeature(Feature.fromGeometry(LineString.fromLngLats(drone.getPathRecord()))), outputFileFailed);
+            System.err.println("Failed to deliver the orders or return to Appleton");
+            return;
         }
-
-
-        if (returnToAppleton()) return;
 
         LineString result = LineString.fromLngLats(drone.getPathRecord());
         GeoJsonUtils.writeGeoJson(FeatureCollection.fromFeature(Feature.fromGeometry(result)), outputFile);
-        System.out.printf("Out of %d orders, %d orders were sent, made %d pence, and returned to AT? %b\n", totalOrders, orderSent, totalCost, drone.getCurrLoc().closeTo(LongLat.AT));
+
+        long endTime = System.nanoTime();
+        double duration = (endTime - startTime) / 1000000000.0;
+        System.out.printf("takes %.2f seconds\n", duration);
     }
 
     private static boolean getNoFlyZones() {
@@ -175,163 +150,6 @@ public class App
 
 
     /**
-     * return the drone to Appleton tower
-     * @return true if the drone made it back to the Tower, false otherwise
-     */
-    // todo: add AStar
-    private static boolean returnToAppleton() {
-        // fly back to Appleton tower
-        drone.findPath(drone.getCurrLocName(), "Appleton Tower");
-        // follow the path to reach Appleton
-        while (!drone.isWaypointsEmpty()) {
-            String targetLoc = drone.getNextWaypointForLag();
-            drone.setTargetLoc(drone.getLocations().get(targetLoc), targetLoc);
-
-            if (!followOneLag("NoOrder")) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Check if the drone has enough power to finish the order or if finishing current order
-     * will leave enough battery for the drone to return to Appleton Tower, add the shops, delivery address
-     * for the order to path if the drone has enough power
-     * @param currOrder the order number of the order whose availability needs to be checked
-     * @return
-     */
-    private static boolean checkAvailability(Order currOrder) {
-        System.out.println("Evaluating order " + currOrder.orderNo);
-        // name of the current location of the drone
-        String start = drone.getCurrLocName();
-        // name of the delivery address
-        String end = currOrder.deliverTo.words;
-        if (currOrder.shops.size() == 2) {
-            String shopAName = currOrder.shops.get(0).getName();
-            String shopBName = currOrder.shops.get(1).getName();
-
-            if (drone.getDistance(start, shopAName) + (drone.getDistance(end, shopBName)) >
-                    drone.getDistance(start, shopBName) + (drone.getDistance(end, shopAName))) {
-                // 0 is the index of Appleton Tower in locationNames, make sure the drone can still return after the order
-                // if not, check the next order
-                if (drone.getDistance(start, shopBName) + drone.getDistance(end, shopAName) + drone.getDistance(shopAName, shopBName)
-                        + drone.getDistance(end, "Appleton Tower") > drone.getMoves()) {
-                    return true;
-                }
-                drone.addToPath(shopBName);
-                drone.addToPath(shopAName);
-            } else {
-                if (drone.getDistance(start, shopAName) + drone.getDistance(end, shopBName) + drone.getDistance(shopAName, shopBName)
-                        + drone.getDistance(end, "Appleton Tower") > drone.getMoves()) {
-                    return true;
-                }
-                drone.addToPath(shopAName);
-                drone.addToPath(shopBName);
-            }
-            drone.addToPath(end);
-        } else {
-            String shopName = currOrder.shops.get(0).getName();
-            if (drone.getDistance(start, shopName) + drone.getDistance(shopName, end)
-                    + drone.getDistance(end, "Appleton Tower") > drone.getMoves()) {
-                return true;
-            }
-            drone.addToPath(shopName);
-            drone.addToPath(end);
-        }
-        return false;
-    }
-
-    /**
-     * follow the pre-planned path for an order
-     * @param currOrder the order number of the order currently taken
-     * @return true if no errors occurred on the path
-     */
-    private static boolean followPathForOrder(Order currOrder) {
-        while (!drone.isPathEmpty()) {
-            String keypoint = drone.getNextLocForOrder();
-            System.out.println("Going to " + keypoint);
-            int intersect = drone.findPath(drone.getCurrLocName(), keypoint);
-            if (intersect == -1) {
-                System.err.println("Problem retrieving the path");
-            }
-            // if any part of the path intersect with no-fly zones, use A star instead
-            if (intersect == 1) {
-                Stack<Integer> plannedPath = drone.planAStar(drone.getLocations().get(keypoint));
-                drone.moveAStar(currOrder.orderNo, plannedPath);
-            }
-
-            // follow the path of one lag of the journey to reach a keypoint in current order
-            while (!drone.isWaypointsEmpty()) {
-                String targetLoc = drone.getNextWaypointForLag();
-                if (!targetLoc.equals(keypoint)) {
-                    System.out.println("Taking a detour through " + targetLoc);
-                }
-                drone.setTargetLoc(drone.getLocations().get(targetLoc), targetLoc);
-
-                if (!followOneLag(currOrder.orderNo)) {
-                    LineString resultFailed = LineString.fromLngLats(drone.getPathRecord());
-                    GeoJsonUtils.writeGeoJson(FeatureCollection.fromFeature(Feature.fromGeometry(resultFailed)), outputFileFailed);
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
-    /**
-     * following the path to one of the waypoints
-     * @param orderNo the order number of the current order the drone is working on
-     * @return false if error
-     */
-    private static boolean followOneLag(String orderNo) {
-        while (!drone.hasArrived()) {
-            drone.calculateAngle();
-            drone.planNextMove();
-
-            if (drone.getMoves() == 0) {
-                System.err.println("Drone stuck");
-                return false;
-            }
-
-            if (drone.checkNFZ(drone.getCurrLoc(), drone.getNextLoc())) {
-                clockCounterclock(drone.getCurrLoc(), drone.getAngle());
-            }
-            // store flight path into the database
-            if (!databaseUtils.storePath(orderNo, drone.getCurrLoc(), drone.getAngle(), drone.getNextLoc())) {
-                System.err.println("Problem writing to flightpath table");
-                return false;
-            }
-            drone.makeNextMove();
-            drone.addToPathRec(drone.getCurrLoc());
-        }
-        return true;
-    }
-
-
-    /**
-     * get out of the no-fly zone using the clockwise counterclockwise maneuver explained in the document
-     * use preAngle to keep the momentum and help avoid getting stuck
-     * @param currLoc the current location of the drone
-     * @param angle the angle calculated automatically by the drone
-     */
-    private static void clockCounterclock(LongLat currLoc, int angle) {
-        int turn = 1;
-            while (true) {
-                if (!drone.checkNFZ(currLoc, currLoc.nextPosition(angle + turn * 10))) {
-                    drone.setNextLoc(currLoc.nextPosition(angle + turn * 10));
-                    break;
-                }
-                if (!drone.checkNFZ(currLoc, currLoc.nextPosition(angle - turn * 10))) {
-                    drone.setNextLoc(currLoc.nextPosition(angle - turn * 10));
-                    break;
-                }
-                turn++;
-            }
-    }
-
-
-    /**
      *
      * @param date
      * @return true no error occurs, false otherwise
@@ -345,7 +163,6 @@ public class App
         }
         for (String[] order : orderNoDeliver) {
             String orderNo = order[0];
-            System.out.println(orderNo);
             // add all deliver destinations to the locations map as well
             // I simply named all the destinations of orders with their
             // corresponding w3w address
@@ -355,6 +172,7 @@ public class App
                 System.err.println("Problem reading W3W address file");
                 return false;
             }
+            // add the delivery address to the map if it isn't already there
             if (!drone.getLocations().containsKey(w3w)) {
                 drone.addLocation(w3w, new LongLat(deliverTo.coordinates));
             }
