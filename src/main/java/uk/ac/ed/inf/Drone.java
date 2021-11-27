@@ -33,8 +33,8 @@ public class Drone {
 
 
     /**
-     * construct the Drone object with where the Drone is
-     * @param currLoc
+     * construct the Drone object with where the Drone is deployed from
+     * @param currLoc the starting location of the drone
      */
     public Drone(LongLat currLoc, String locName, DatabaseUtils databaseUtils) {
         this.currLoc = currLoc;
@@ -86,6 +86,14 @@ public class Drone {
         return 0;
     }
 
+
+    /**
+     * check the availability of the current most profitable order, and deliver it if it is,
+     * otherwise check the next order until the orders are all checked
+     * @param orders The list of orders to deliver on a specified date
+     * @return true if the drone manages to go through the orders and return to Appleton Tower,
+     *          false otherwise
+     */
     public boolean deliverOrders(Queue<Order> orders) {
         int totalOrders = orders.size();
         int orderSent = 0;
@@ -97,13 +105,13 @@ public class Drone {
             totalCost += currOrder.deliveryCost;
             // check if an order is available and plan its path if it is
             if (!checkAvailability(currOrder)) {
-                //System.out.printf("Apologies, cannot finish order %s, not enough power left, lost %d pence\n", currOrder.orderNo, currOrder.deliveryCost);
+                System.out.printf("Apologies, cannot finish order %s, not enough power left, lost %d pence\n", currOrder.orderNo, currOrder.deliveryCost);
                 continue;
             }
 
             // if the program gets here, then the order will be carried out,
             // so store it to our orders database
-            databaseUtils.storeOrder(currOrder.orderNo, currOrder.deliverTo.words, currOrder.deliveryCost);
+            databaseUtils.storeOrder(currOrder.orderNo, currOrder.locationName, currOrder.deliveryCost);
 
             if (!followPathForOrder(currOrder)) {
                 System.err.printf("Failed to complete order %s due to planning error\n", currOrder.orderNo);
@@ -127,32 +135,37 @@ public class Drone {
     /**
      * Check if the drone has enough power to finish the order or if finishing current order
      * will leave enough battery for the drone to return to Appleton Tower, add the shops, delivery address
-     * for the order to path if the drone has enough power
+     * for the order to path if the drone has enough power. It also compares the shortest path if two shops
+     * need to be visited.
      * @param currOrder the order number of the order whose availability needs to be checked
-     * @return
+     * @return true if the drone can finish the order and has enough power to return to AT,
+     *          false otherwise
      */
     private boolean checkAvailability(Order currOrder) {
         // name of the current location of the drone
         String start = currLocName;
         // name of the delivery address
-        String end = currOrder.deliverTo.words;
+        String end = currOrder.locationName;
+        // the number of times the drone needs to hover
+        int hover = 0;
+        // if an order requires visiting two shops, make a quick comparison as well as checking the availability
         if (currOrder.shops.size() == 2) {
+            // the drone needs to hover over the two shops and the delivery address
+            hover = 3;
             String shopAName = currOrder.shops.get(0).getName();
             String shopBName = currOrder.shops.get(1).getName();
 
             if (map.getDistance(start, shopAName) + (map.getDistance(end, shopBName)) >
                     map.getDistance(start, shopBName) + (map.getDistance(end, shopAName))) {
-                // 0 is the index of Appleton Tower in locationNames, make sure the drone can still return after the order
-                // if not, check the next order
                 if (map.getDistance(start, shopBName) + map.getDistance(end, shopAName) + map.getDistance(shopAName, shopBName)
-                        + map.getDistance(end, "Appleton Tower") > moves) {
+                        + map.getDistance(end, "Appleton Tower") + hover > moves) {
                     return false;
                 }
                 path.add(shopBName);
                 path.add(shopAName);
             } else {
                 if (map.getDistance(start, shopAName) + map.getDistance(end, shopBName) + map.getDistance(shopAName, shopBName)
-                        + map.getDistance(end, "Appleton Tower") > moves) {
+                        + map.getDistance(end, "Appleton Tower") + hover > moves) {
                     return false;
                 }
                 path.add(shopAName);
@@ -160,9 +173,12 @@ public class Drone {
             }
             path.add(end);
         } else {
+            // the drone needs to hover over the shop and the delivery address
+            hover = 2;
+            // only one shop for this order, no comparison needed, just check availability
             String shopName = currOrder.shops.get(0).getName();
             if (map.getDistance(start, shopName) + map.getDistance(shopName, end)
-                    + map.getDistance(end, "Appleton Tower") > moves) {
+                    + map.getDistance(end, "Appleton Tower") + hover > moves) {
                 return false;
             }
             path.add(shopName);
@@ -224,11 +240,6 @@ public class Drone {
                 return false;
             }
             planNextMove();
-            if (checkNFZ(currLoc, nextLoc)) {
-                clockCounterclock();
-                // recalculate the next location with the new angle
-                planNextMove();
-            }
             makeNextMove(orderNo);
         }
         return true;
@@ -242,8 +253,7 @@ public class Drone {
         // fly back to Appleton tower
         findPath(currLocName, "Appleton Tower");
         // follow the path to reach Appleton
-        if (followWaypoints("NoOrder")) return false;
-        return true;
+        return followWaypoints("NoOrder");
     }
 
     //--------------------------- drone planning and movement in normal situation --------------------------------//
@@ -278,6 +288,11 @@ public class Drone {
             System.err.println("An invalid move");
         }
         nextLoc = currLoc.nextPosition(angle);
+        if (map.intersectNFZ(currLoc, nextLoc)) {
+            clockCounterclock();
+            // recalculate the next location with the new angle
+            planNextMove();
+        }
     }
 
     /**
@@ -322,14 +337,15 @@ public class Drone {
      * use preAngle to keep the momentum and help avoid getting stuck
      */
     private void clockCounterclock() {
+        System.out.println("needs to avoid NFZ");
         int turn = 1;
         while (true) {
-            if (!checkNFZ(currLoc, currLoc.nextPosition(angle + turn * 10))) {
+            if (!map.intersectNFZ(currLoc, currLoc.nextPosition(angle + turn * 10))) {
                 this.angle = angle + turn * 10;
                 planNextMove();
                 break;
             }
-            if (!checkNFZ(currLoc, currLoc.nextPosition(angle - turn * 10))) {
+            if (!map.intersectNFZ(currLoc, currLoc.nextPosition(angle - turn * 10))) {
                 this.angle = angle - turn * 10;
                 planNextMove();
                 break;
@@ -342,8 +358,8 @@ public class Drone {
 
     /**
      * plan the path with AStar
-     * @param target
-     * @return
+     * @param target the LongLat coordinate of the location to reach
+     * @return true if a path is viable with current accuracy, false otherwise
      */
     public Stack<Integer> planAStar(LongLat target) {
         LongLat cur = currLoc;
@@ -367,8 +383,11 @@ public class Drone {
             // drone can only move in angles with 10 degree of precision
             for (int i = 0; i <= 350; i += 10) {
                 LongLat next = best.loc.nextPosition(i);
+                // if the next location is outside confinement area or the path there intersect
+                // with no-fly zone, it's not added to the lists
                 if (map.intersectNFZ(best.loc, next) || !next.isConfined()) continue;
                 Node child = new Node(next, best.g + 1, next.distanceTo(target), i, best);
+                // if a node has never been visited before
                 if (!open.contains(child) && !closed.contains(child)) {
                     open.add(child);
                 } else {
@@ -404,7 +423,7 @@ public class Drone {
     /**
      * Follow the path planned by
      * @param orderNo the order number of the order being carried out
-     * @param pathPlanned
+     * @param pathPlanned the list of angles planned by A*
      * @return true if the path can be followed successfully
      */
     public boolean moveAStar(String orderNo, Stack<Integer> pathPlanned) {
@@ -414,6 +433,10 @@ public class Drone {
             int anglePlaned = pathPlanned.pop();
             this.angle = anglePlaned;
             planNextMove();
+            // double check to make sure the route is legal
+            if (map.intersectNFZ(currLoc, nextLoc)) {
+                System.err.println("Path planned by A* intersects with no-fly zone");
+            }
             makeNextMove(orderNo);
         }
 
@@ -462,16 +485,6 @@ public class Drone {
      */
     public List<String> getLocationNames() {
         return map.locationNames;
-    }
-
-    /**
-     * check if the direct path between two points intersect with no-fly zones
-     * @param locA coordinate of one location
-     * @param locB coordinate of the other location
-     * @return true if the direct path between them intersect with no-fly zones
-     */
-    public boolean checkNFZ(LongLat locA, LongLat locB) {
-        return map.intersectNFZ(locA, locB);
     }
 
     /**

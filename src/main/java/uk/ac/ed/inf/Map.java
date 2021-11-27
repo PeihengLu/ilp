@@ -44,15 +44,20 @@ public class Map {
     public void populateGraph() {
         for (int i = 0; i < locationNames.size(); i ++) {
             for (int j = i; j < locationNames.size(); j ++) {
+                // initialize distance to itself to 0, and the node to reach itself is itself
                 if (i == j) {
                     graph[i][j] = 0;
                     next[i][j] = i;
                     intersect[i][j] = false;
                 }
+
+                // assign the estimated moves needed to travel between two nodes as weights
                 String locA = locationNames.get(i);
                 String locB = locationNames.get(j);
-                int weight = (int) Math.ceil(locations.get(locA).distanceTo(locations.get(locB)) * 1.01 / 0.00015) + 1;
+                int weight = (int) Math.ceil(locations.get(locA).distanceTo(locations.get(locB)) * 1.01 / 0.00015);
                 if (intersectNFZ(locations.get(locA), locations.get(locB))) {
+                    // if the direct path between two nodes intersect with no-fly zone, it should take no more than
+                    // three times as much moves for A* to reach the destination
                     weight = weight * 3;
                     intersect[i][j] = true;
                     intersect[j][i] = true;
@@ -73,17 +78,15 @@ public class Map {
     public void shortestPath() {
         int s = locationNames.size();
 
+        // initializes the paths between two nodes to the direct path between them
         for (int i = 0; i < s; i ++) {
             for (int j = 0; j < s; j++) {
                 next[i][j] = j;
             }
         }
 
-        for (int i = 0; i < s; i ++) {
-            next[i][i] = i;
-            graph[i][i] = 0;
-        }
-
+        // adding more and more nodes into the partial graph and check if the
+        // new node gives a shorter path between two nodes
         for (int l = 0; l < s; l ++) {
             for (int i = 0; i < s; i ++) {
                 for (int j = 0; j < s; j ++) {
@@ -116,7 +119,7 @@ public class Map {
     }
 
     /**
-     * get the distance for the drone needs to cover to move between two locations
+     * get the number of moves needed by the drone to move between two locations
      * or a very pessimistic estimation of the distance if the path intersect with
      * no-fly zones
      * @param locA the name of one location

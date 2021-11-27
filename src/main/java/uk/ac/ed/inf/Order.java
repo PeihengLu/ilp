@@ -8,10 +8,10 @@ import java.util.List;
  */
 public class Order implements Comparable<Order> {
     public final String orderNo;
-    /** the name of the order delivery point, simply its corresponding w3w word */
+    /** the name of the order delivery address, simply its corresponding w3w word */
     public final String locationName;
     public final List<String> items;
-    public final Location deliverTo;
+    public final LongLat deliverAddress;
     public final List<Shop> shops;
     public final int deliveryCost;
 
@@ -21,15 +21,15 @@ public class Order implements Comparable<Order> {
      * @param orderNo the order number
      * @param locationName the name of delivery address of the order (the w3w representation of the address)
      * @param items the items contained by the order
-     * @param deliverTo the coordinate of the delivery address
+     * @param deliverAddress the coordinate of the delivery address
      * @param shops the list of the shops that needs to be visited for an order
      * @param deliveryCost how much the user needs to pay for this order
      */
-    public Order(String orderNo, String locationName, List<String> items, Location deliverTo, List<Shop> shops, int deliveryCost) {
+    public Order(String orderNo, String locationName, List<String> items, LongLat deliverAddress, List<Shop> shops, int deliveryCost) {
         this.orderNo = orderNo;
         this.locationName = locationName;
         this.items = items;
-        this.deliverTo = deliverTo;
+        this.deliverAddress = deliverAddress;
         this.shops = shops;
         this.deliveryCost = deliveryCost;
     }

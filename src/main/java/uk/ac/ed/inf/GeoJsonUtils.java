@@ -29,7 +29,7 @@ public class GeoJsonUtils {
      */
     public static List<Feature> readGeoJson(String url) {
         // start HTTP connection with the server
-        serverUtils connection = new serverUtils(url);
+        ServerUtils connection = new ServerUtils(url);
 
         // the file content read from the menus json file on the web server
         String content = connection.readStringFromUrl();

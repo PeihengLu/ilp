@@ -18,7 +18,7 @@ public class Menus {
     /** record the prices of food items (itemName, price) */
     public final HashMap<String, Integer> prices = new HashMap<>();
     /** record the shops that's visited for one order */
-    private HashSet<Shop> shopped = new HashSet<>();
+    private final HashSet<Shop> shopped = new HashSet<>();
 
 
     /**
@@ -34,24 +34,45 @@ public class Menus {
         // location of the menus file on the server
         String AddressToMenu = server + "/menus/menus.json";
         // start HTTP connection with the server
-        serverUtils connection = new serverUtils(AddressToMenu);
+        ServerUtils connection = new ServerUtils(AddressToMenu);
 
         // the file content read from the menus json file on the web server
-        String menus = connection.readStringFromUrl();
-        if (menus == null) {
+        String shopsJSON = connection.readStringFromUrl();
+        if (shopsJSON == null) {
             System.err.println("Trouble connecting to server");
             return;
         }
 
         // parse the menu with Gson into a list of Shop instances
+        ArrayList<Shop> shops = getShops(shopsJSON);
+        if (shops == null) return;
+
+        // populate provider and prices Hash tables with information from the server
+        getItemInfo(shops);
+    }
+
+    /**
+     * parse the information from the server into a list of shops
+     * @param menus
+     * @return
+     */
+    private ArrayList<Shop> getShops(String menus) {
         Type shopListType = new TypeToken<ArrayList<Shop>>() {}.getType();
         ArrayList<Shop> shops = new Gson().fromJson(menus, shopListType);
         if (shops == null) {
             System.err.println("Issue with parsing of JSON file");
-            return;
+            return null;
         }
+        return shops;
+    }
 
-        // populate provider and prices Hash tables with information from the server
+
+    /**
+     * get the useful information about an item: which shop is it sold in,
+     * and for what price. Then stores them in the HashMaps providers and prices
+     * @param shops the Shop instances parsed from the server
+     */
+    private void getItemInfo(ArrayList<Shop> shops) {
         for (Shop shop: shops) {
             ArrayList<Item> menu = shop.getMenu();
             for (Item i : menu) {
@@ -94,7 +115,10 @@ public class Menus {
         return val;
     }
 
-
+    /**
+     * get the shops to visit for an order after calculating its delivery cost
+     * @return
+     */
     public HashSet<Shop> getShopped() {
         return shopped;
     }

@@ -18,33 +18,7 @@ public class DatabaseUtils {
     public DatabaseUtils(String name, String port, String dbName) {
         this.server = "jdbc:derby://" + name + ":" + port + "/" + dbName;
         try {
-            Connection connection = DriverManager.getConnection(this.server);
-            Statement statement = connection.createStatement();
-
-            // drop deliveries and flightpath tables if they already exist
-            DatabaseMetaData databaseMetaData = connection.getMetaData();
-            ResultSet resultSet = databaseMetaData.getTables(null, null, "DELIVERIES", null);
-            if (resultSet.next()) statement.execute("drop table deliveries");
-
-            resultSet = databaseMetaData.getTables(null, null, "FLIGHTPATH", null);
-            if (resultSet.next()) statement.execute("drop table flightpath");
-
-            // create new deliveries and flightpath tables
-            statement.execute(
-                    "create table deliveries(" +
-                            "orderNo char(8) ," +
-                            "deliveredTo varchar(19) ," +
-                            "costInPence int)"
-            );
-            statement.execute(
-                    "create table flightpath(" +
-                            "orderNo char(8) ," +
-                            "fromLongitude double ," +
-                            "fromLatitude double ," +
-                            "angle integer ," +
-                            "toLongitude double ," +
-                            "toLatitude double)"
-            );
+            createTables();
         } catch (SQLException e) {
             System.err.println("Problem with db server connection");
             System.err.println(e.getMessage());
@@ -52,13 +26,47 @@ public class DatabaseUtils {
 
     }
 
+    /**
+     * create new deliveries and flightpath tables
+     * @throws SQLException
+     */
+    private void createTables() throws SQLException {
+        Connection connection = DriverManager.getConnection(this.server);
+        Statement statement = connection.createStatement();
+
+        // drop deliveries and flightpath tables if they already exist
+        DatabaseMetaData databaseMetaData = connection.getMetaData();
+        ResultSet resultSet = databaseMetaData.getTables(null, null, "DELIVERIES", null);
+        if (resultSet.next()) statement.execute("drop table deliveries");
+
+        resultSet = databaseMetaData.getTables(null, null, "FLIGHTPATH", null);
+        if (resultSet.next()) statement.execute("drop table flightpath");
+
+        // create new deliveries and flightpath tables
+        statement.execute(
+                "create table deliveries(" +
+                        "orderNo char(8) ," +
+                        "deliveredTo varchar(19) ," +
+                        "costInPence int)"
+        );
+        statement.execute(
+                "create table flightpath(" +
+                        "orderNo char(8) ," +
+                        "fromLongitude double ," +
+                        "fromLatitude double ," +
+                        "angle integer ," +
+                        "toLongitude double ," +
+                        "toLatitude double)"
+        );
+    }
+
 
     /**
-     *
+     *  retrieve the orders from database server
      * @param date the data of order
      * @return a list of lists containing order number and delivery address
      */
-    public List<String[]> getOrders(String date) {
+    public List<String[]> retrieveOrders(String date) {
         List<String[]> orderInfo = new ArrayList<>();
 
         try {
@@ -86,9 +94,9 @@ public class DatabaseUtils {
 
 
     /**
-     * get the items of an order
+     * get the items to deliver for an order
      * @param orderNo order number of the order
-     * @return the items on that order
+     * @return the items in that order
      */
     public List<String> getItems(String orderNo) {
         List<String> items = new ArrayList<>();
@@ -115,10 +123,10 @@ public class DatabaseUtils {
 
     /**
      * write into flightPath table
-     * @param orderNo
-     * @param from
-     * @param angle
-     * @param to
+     * @param orderNo the order number of the order currently delivered by the drone
+     * @param from the starting location of the drone
+     * @param angle angle the drone is moving towards
+     * @param to the next location of the drone
      */
     public boolean storePath(String orderNo, LongLat from, int angle, LongLat to) {
         try {
@@ -146,10 +154,10 @@ public class DatabaseUtils {
 
     /**
      * write into the deliveries table
-     * @param orderNo
-     * @param deliveredTo
-     * @param cost
-     * @return
+     * @param orderNo the order number of the order being delivered
+     * @param deliveredTo the w3w location of the delivery address
+     * @param cost the delivery cost in pence
+     * @return true if no errors occurred, false otherwise
      */
     public boolean storeOrder(String orderNo, String deliveredTo, int cost) {
         try {

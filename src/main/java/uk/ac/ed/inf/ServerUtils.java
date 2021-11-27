@@ -10,7 +10,7 @@ import java.net.http.HttpResponse;
 /**
  * Class used to read Json files from our web server
  */
-public class serverUtils {
+public class ServerUtils {
     /** url directed to the Json file to read */
     private final String url;
     private static final HttpClient client = HttpClient.newHttpClient();
@@ -19,7 +19,7 @@ public class serverUtils {
      * constructor that assigns value to the url attribute
      * @param url the address of the JSON file on the web server
      */
-    public serverUtils(String url) {
+    public ServerUtils(String url) {
         this.url = url;
     }
 

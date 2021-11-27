@@ -95,7 +95,7 @@ public class LongLat {
     /**
      * used by A start algorithm to determine whether this location is visited or not
      * @param other the other location to compare with
-     * @return true if distance between this and other is less than 0.00003
+     * @return true if distance between this and other is less than threshold / 5 (0.00003 here)
      */
     public boolean veryCloseTo(LongLat other) {
         return distanceTo(other) < threshold / 5;

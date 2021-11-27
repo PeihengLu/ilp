@@ -32,7 +32,7 @@ public class W3WUtils {
         url += "details.json";
 
         // server connection and information retrieval
-        serverUtils connection = new serverUtils(url);
+        ServerUtils connection = new ServerUtils(url);
         String response = connection.readStringFromUrl();
         if (response == null) {
             System.err.println("Trouble connecting to server");

@@ -3,7 +3,6 @@ package uk.ac.ed.inf;
 import com.mapbox.geojson.*;
 import com.mapbox.geojson.Polygon;
 
-import java.sql.Time;
 import java.util.*;
 
 /**
@@ -78,6 +77,8 @@ public class App
             return;
         }
 
+        // after all locations are loaded into the map, initialize the three arrays representing the
+        // graph to
         int s = drone.getLocationNames().size();
         drone.initializeGraph(s);
 
@@ -96,6 +97,10 @@ public class App
         System.out.printf("takes %.2f seconds\n", duration);
     }
 
+    /**
+     * retrieves the no-fly zones from the server and
+     * @return
+     */
     private static boolean getNoFlyZones() {
         List<Feature> nfz = GeoJsonUtils.readGeoJson(geoJsonUtils.noFlyZone);
         if (nfz == null) {
@@ -110,6 +115,10 @@ public class App
         return true;
     }
 
+    /**
+     * Get the landmarks used to avoid no-fly zones, and add them to the map of the drone
+     * @return
+     */
     private static boolean getLandmarks() {
         // get the landmarks
         List<Feature> landmarks = GeoJsonUtils.readGeoJson(geoJsonUtils.landmarks);
@@ -129,7 +138,8 @@ public class App
     }
 
     /**
-     * get the information of all the shops providing food for the service
+     * get the information of all the shops providing food for the service, and add them
+     * to the map of the drone if it's not already added
      * @return
      */
     private static boolean getShopsInfo() {
@@ -150,13 +160,14 @@ public class App
 
 
     /**
-     *
-     * @param date
+     * Retrieve the orders for a specified date. Save them in the app class and
+     * later pass it to the drone
+     * @param date the date when the orders are made
      * @return true no error occurs, false otherwise
      */
     private static boolean getOrders(String date) {
         // get the order details
-        List<String[]> orderNoDeliver = databaseUtils.getOrders(date);
+        List<String[]> orderNoDeliver = databaseUtils.retrieveOrders(date);
         if (orderNoDeliver == null) {
             System.err.println("Problem reading orders table");
             return false;
@@ -167,14 +178,14 @@ public class App
             // I simply named all the destinations of orders with their
             // corresponding w3w address
             String w3w = order[1];
-            Location deliverTo = wUtils.convertW3W(w3w);
-            if (deliverTo == null) {
+            if (wUtils.convertW3W(w3w) == null) {
                 System.err.println("Problem reading W3W address file");
                 return false;
             }
+            LongLat deliverTo = new LongLat(wUtils.convertW3W(w3w).coordinates);
             // add the delivery address to the map if it isn't already there
             if (!drone.getLocations().containsKey(w3w)) {
-                drone.addLocation(w3w, new LongLat(deliverTo.coordinates));
+                drone.addLocation(w3w, deliverTo);
             }
 
             List<String> items = databaseUtils.getItems(orderNo);
