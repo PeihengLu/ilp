@@ -21,9 +21,6 @@ public class App
     private static Drone drone;
     private static final Queue<Order> orders = new PriorityQueue<>(Collections.reverseOrder());
 
-    private static String outputFile;
-    private static String outputFileFailed;
-
     public static void main( String[] args)
     {
         long startTime = System.nanoTime();
@@ -41,8 +38,8 @@ public class App
         // name of the server for connection
         String name = "localhost";
         // name of the output geojson file storing the path
-        outputFile = "../" + String.join("-", "drone", day, month, year) + ".geojson";
-        outputFileFailed = "../" + String.join("-", "drone", day, month, year) + "failed" + ".geojson";
+        String outputFile = "../" + String.join("-", "drone", day, month, year) + ".geojson";
+        String outputFileFailed = "../" + String.join("-", "drone", day, month, year) + "failed" + ".geojson";
 
         // connect menus to the server
         menus = new Menus(name, port);
@@ -98,15 +95,17 @@ public class App
     }
 
     /**
-     * retrieves the no-fly zones from the server and
-     * @return
+     * retrieves the no-fly zones from the server and store them in the drone
+     * @return true if no error occurs, false otherwise
      */
     private static boolean getNoFlyZones() {
+        // retrieve no-fly zones from the server
         List<Feature> nfz = GeoJsonUtils.readGeoJson(geoJsonUtils.noFlyZone);
         if (nfz == null) {
             System.err.println("Problem reading noflyzone geojson file");
             return false;
         }
+        // store the no-fly zones as a list of Polygons in the drone
         for (Feature f: nfz) {
             if (f.geometry() instanceof Polygon) {
                 drone.addNFZ((Polygon) f.geometry());
@@ -117,7 +116,7 @@ public class App
 
     /**
      * Get the landmarks used to avoid no-fly zones, and add them to the map of the drone
-     * @return
+     * @return true if no error occurs, false otherwise
      */
     private static boolean getLandmarks() {
         // get the landmarks
@@ -132,7 +131,7 @@ public class App
                 System.err.println("Problem reading W3W address file");
                 return false;
             }
-            drone.addLocation(landmark.getStringProperty("name"), new LongLat(loc.coordinates));
+            drone.addLocation(landmark.getStringProperty("name"), loc.coordinates);
         }
         return true;
     }
@@ -152,7 +151,7 @@ public class App
                 return false;
             }
             if (!drone.getLocations().containsKey(shop.getName())) {
-                drone.addLocation(shop.getName(), new LongLat(loc.coordinates));
+                drone.addLocation(shop.getName(), loc.coordinates);
             }
         }
         return true;
@@ -182,7 +181,7 @@ public class App
                 System.err.println("Problem reading W3W address file");
                 return false;
             }
-            LongLat deliverTo = new LongLat(wUtils.convertW3W(w3w).coordinates);
+            LongLat deliverTo = wUtils.convertW3W(w3w).coordinates;
             // add the delivery address to the map if it isn't already there
             if (!drone.getLocations().containsKey(w3w)) {
                 drone.addLocation(w3w, deliverTo);

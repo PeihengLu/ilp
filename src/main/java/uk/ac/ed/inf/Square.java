@@ -7,16 +7,16 @@ package uk.ac.ed.inf;
  */
 public class Square {
     /** southwest corner of this square **/
-    public final LongLatSimple southWest;
+    public final LongLat southWest;
     /** northeast corner of this square **/
-    public final LongLatSimple northEast;
+    public final LongLat northEast;
 
     /**
      * construct a Square object
      * @param southWest southwest corner of the square
      * @param northEast northeast corner of the square
      */
-    public Square(LongLatSimple southWest, LongLatSimple northEast) {
+    public Square(LongLat southWest, LongLat northEast) {
         this.southWest = southWest;
         this.northEast = northEast;
     }

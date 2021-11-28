@@ -7,8 +7,8 @@ package uk.ac.ed.inf;
  */
 public class LongLat {
     /** longitude and latitude of current object */
-    public final double longitude;
-    public final double latitude;
+    public final double lng;
+    public final double lat;
 
     // Below are some possibly useful coordinates of key locations
     /** Appleton Tower */
@@ -34,20 +34,9 @@ public class LongLat {
      * @param latitude latitude of the location
      */
     public LongLat(double longitude, double latitude) {
-        this.longitude = longitude;
-        this.latitude = latitude;
+        this.lng = longitude;
+        this.lat = latitude;
     }
-
-    /**
-     * another constructor to convert LongLatSimple object into LongLat for a
-     * uniform representation of coordinates
-     * @param longLatSimple the LongLatSimple object generated with Gson parsing
-     */
-    public LongLat(LongLatSimple longLatSimple) {
-        this.longitude = longLatSimple.lng;
-        this.latitude = longLatSimple.lat;
-    }
-
 
     /**
      * check if the coordinate of this LongLat is within the confinement of FH, KFC, TOM and BBS
@@ -55,10 +44,10 @@ public class LongLat {
      */
     public boolean isConfined() {
         // check the coordinate against the key points on the upper left and lower right corner
-        return this.longitude < BBS.longitude &&
-               this.longitude > FH.longitude &&
-               this.latitude < FH.latitude &&
-               this.latitude > BBS.latitude;
+        return this.lng < BBS.lng &&
+               this.lng > FH.lng &&
+               this.lat < FH.lat &&
+               this.lat > BBS.lat;
     }
 
     /**
@@ -68,7 +57,7 @@ public class LongLat {
      */
     public double distanceTo(LongLat other) {
         // calculate use the Pythagorean function, ignoring the curvature of the ground
-        return Math.sqrt(Math.pow(other.longitude - this.longitude, 2) + Math.pow(other.latitude - this.latitude, 2));
+        return Math.sqrt(Math.pow(other.lng - this.lng, 2) + Math.pow(other.lat - this.lat, 2));
     }
 
     /**
@@ -89,7 +78,7 @@ public class LongLat {
     public LongLat nextPosition(int angle) {
         // the drone is hovering when angle if -999
         if (angle == -999) return this;
-        return new LongLat(this.longitude + distance*Math.cos(Math.toRadians(angle)), this.latitude + distance*Math.sin(Math.toRadians(angle)));
+        return new LongLat(this.lng + distance*Math.cos(Math.toRadians(angle)), this.lat + distance*Math.sin(Math.toRadians(angle)));
     }
 
     /**

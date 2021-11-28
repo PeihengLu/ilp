@@ -136,11 +136,11 @@ public class DatabaseUtils {
             );
 
             preparedStatement.setString(1, orderNo);
-            preparedStatement.setDouble(2, from.longitude);
-            preparedStatement.setDouble(3, from.latitude);
+            preparedStatement.setDouble(2, from.lng);
+            preparedStatement.setDouble(3, from.lat);
             preparedStatement.setInt(4, angle);
-            preparedStatement.setDouble(5, to.longitude);
-            preparedStatement.setDouble(6, to.latitude);
+            preparedStatement.setDouble(5, to.lng);
+            preparedStatement.setDouble(6, to.lat);
 
             preparedStatement.execute();
         } catch (SQLException ex) {

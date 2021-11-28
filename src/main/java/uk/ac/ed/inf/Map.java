@@ -108,8 +108,8 @@ public class Map {
      */
     public boolean intersectNFZ(LongLat p1, LongLat p2) {
         if (!p2.isConfined()) return true;
-        Point point1 = Point.fromLngLat(p1.longitude, p1.latitude);
-        Point point2 = Point.fromLngLat(p2.longitude, p2.latitude);
+        Point point1 = Point.fromLngLat(p1.lng, p1.lat);
+        Point point2 = Point.fromLngLat(p2.lng, p2.lat);
 
         for (Polygon polygon: noFlyZones) {
             if (GeoJsonUtils.pathInterceptPolygon(point1, point2, polygon)) return true;

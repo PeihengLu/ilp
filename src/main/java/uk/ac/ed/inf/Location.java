@@ -12,7 +12,7 @@ public class Location {
     /** the nearest city to this location **/
     public final String nearestPlace;
     /** the long lat coordinate of the location **/
-    public final LongLatSimple coordinates;
+    public final LongLat coordinates;
     /** the location in w3w format **/
     public final String words;
     /** the language of the name of the location **/
@@ -31,7 +31,7 @@ public class Location {
      * @param language the language of the name of the location
      * @param map url to its location on the map of w3w server
      */
-    public Location(String country, Square square, String nearestPlace, LongLatSimple coordinates, String words, String language, String map) {
+    public Location(String country, Square square, String nearestPlace, LongLat coordinates, String words, String language, String map) {
         this.country = country;
         this.square = square;
         this.nearestPlace = nearestPlace;

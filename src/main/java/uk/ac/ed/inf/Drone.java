@@ -266,7 +266,7 @@ public class Drone {
             System.err.println("The target of the drone is not yet set");
         }
 
-        double ang = Math.toDegrees(Math.atan2(targetLoc.latitude - currLoc.latitude, targetLoc.longitude - currLoc.longitude));
+        double ang = Math.toDegrees(Math.atan2(targetLoc.lat - currLoc.lat, targetLoc.lng - currLoc.lng));
         if (ang < 0) ang += 360;
         angle = roundToTen(ang);
     }
@@ -467,7 +467,7 @@ public class Drone {
      * @param longLat
      */
     public void addToPathRec(LongLat longLat) {
-        Point point = Point.fromLngLat(longLat.longitude, longLat.latitude);
+        Point point = Point.fromLngLat(longLat.lng, longLat.lat);
         pathRec.add(point);
     }
 

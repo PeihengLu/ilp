@@ -59,8 +59,8 @@ public class AppTest {
 
 
     private boolean approxEq(LongLat l1, LongLat l2) {
-        return approxEq(l1.longitude, l2.longitude) &&
-                approxEq(l1.latitude, l2.latitude);
+        return approxEq(l1.lng, l2.lng) &&
+                approxEq(l1.lat, l2.lat);
     }
 
     @Test
@@ -272,8 +272,8 @@ public class AppTest {
     }
 
     private static boolean checkNFZ(LongLat p1, LongLat p2, List<Polygon> noFlyZones) {
-        Point point1 = Point.fromLngLat(p1.longitude, p1.latitude);
-        Point point2 = Point.fromLngLat(p2.longitude, p2.latitude);
+        Point point1 = Point.fromLngLat(p1.lng, p1.lat);
+        Point point2 = Point.fromLngLat(p2.lng, p2.lat);
 
         for (Polygon polygon: noFlyZones) {
             if (GeoJsonUtils.pathInterceptPolygon(point1, point2, polygon)) return true;
