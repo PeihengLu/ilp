@@ -23,7 +23,6 @@ public class DatabaseUtils {
             System.err.println("Problem with db server connection");
             System.err.println(e.getMessage());
         }
-
     }
 
     /**

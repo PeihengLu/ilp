@@ -238,13 +238,13 @@ public class AppTest {
         Point testBFalse2 = Point.fromLngLat(0, 6);
 
 
-        assertTrue(GeoJsonUtils.pathInterceptPolygon(testATrue1, testBTrue1, polygon));
-        assertTrue(GeoJsonUtils.pathInterceptPolygon(testATrue2, testBTrue2, polygon));
-        assertTrue(GeoJsonUtils.pathInterceptPolygon(testATrue3, testBTrue3, polygon));
-        assertTrue(GeoJsonUtils.pathInterceptPolygon(testATrue4, testBTrue4, polygon));
+        assertTrue(Map.pathInterceptPolygon(testATrue1, testBTrue1, polygon));
+        assertTrue(Map.pathInterceptPolygon(testATrue2, testBTrue2, polygon));
+        assertTrue(Map.pathInterceptPolygon(testATrue3, testBTrue3, polygon));
+        assertTrue(Map.pathInterceptPolygon(testATrue4, testBTrue4, polygon));
 
-        assertFalse(GeoJsonUtils.pathInterceptPolygon(testAFalse1, testBFalse1, polygon));
-        assertFalse(GeoJsonUtils.pathInterceptPolygon(testAFalse2, testBFalse2, polygon));
+        assertFalse(Map.pathInterceptPolygon(testAFalse1, testBFalse1, polygon));
+        assertFalse(Map.pathInterceptPolygon(testAFalse2, testBFalse2, polygon));
     }
 
 
@@ -276,7 +276,7 @@ public class AppTest {
         Point point2 = Point.fromLngLat(p2.lng, p2.lat);
 
         for (Polygon polygon: noFlyZones) {
-            if (GeoJsonUtils.pathInterceptPolygon(point1, point2, polygon)) return true;
+            if (Map.pathInterceptPolygon(point1, point2, polygon)) return true;
         }
 
         return false;

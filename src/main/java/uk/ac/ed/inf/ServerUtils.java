@@ -11,20 +11,20 @@ import java.net.http.HttpResponse;
  * Class used to read Json files from our web server
  */
 public class ServerUtils {
-    /** url directed to the Json file to read */
+    /** url directed to the file to read */
     private final String url;
     private static final HttpClient client = HttpClient.newHttpClient();
 
     /**
      * constructor that assigns value to the url attribute
-     * @param url the address of the JSON file on the web server
+     * @param url the address of the file on the web server
      */
     public ServerUtils(String url) {
         this.url = url;
     }
 
     /**
-     * read a json file from a web server
+     * read a file from a web server
      * @return the content read from the file as a String, returns null if problems occur at connection
      */
     public String readStringFromUrl() {
