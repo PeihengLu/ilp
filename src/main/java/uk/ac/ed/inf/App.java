@@ -23,6 +23,7 @@ public class App
 
     public static void main( String[] args)
     {
+        // calculating the runtime of the system
         long startTime = System.nanoTime();
         if (args.length != 5) {
             System.err.println("You should enter 5 arguments: day, month, year, webserver port and database port!");

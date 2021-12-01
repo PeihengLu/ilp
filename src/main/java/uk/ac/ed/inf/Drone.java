@@ -154,9 +154,10 @@ public class Drone {
             hover = 3;
             String shopAName = currOrder.shops.get(0).getName();
             String shopBName = currOrder.shops.get(1).getName();
-
+            // decide which ordering of shops to visit gives the shortest path
             if (map.getDistance(start, shopAName) + (map.getDistance(end, shopBName)) >
                     map.getDistance(start, shopBName) + (map.getDistance(end, shopAName))) {
+                // decide whether the drone can finish the order and still have enough power to go back to AT
                 if (map.getDistance(start, shopBName) + map.getDistance(end, shopAName) + map.getDistance(shopAName, shopBName)
                         + map.getDistance(end, "Appleton Tower") + hover > moves) {
                     return false;
@@ -429,13 +430,17 @@ public class Drone {
     public boolean moveAStar(String orderNo, Stack<Integer> pathPlanned) {
         // follow the path planned by A star
         while (!pathPlanned.isEmpty()) {
-            if (moves == 0) return false;
-            int anglePlaned = pathPlanned.pop();
-            this.angle = anglePlaned;
+            if (moves == 0) {
+                System.err.println("Drone stuck when following path produced by A*");
+                return false;
+            }
+            this.angle = pathPlanned.pop();
             planNextMove();
             // double check to make sure the route is legal
             if (map.intersectNFZ(currLoc, nextLoc)) {
                 System.err.println("Path planned by A* intersects with no-fly zone");
+                clockCounterclock();
+                planNextMove();
             }
             makeNextMove(orderNo);
         }
