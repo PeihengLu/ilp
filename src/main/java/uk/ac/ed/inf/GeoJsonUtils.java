@@ -13,6 +13,12 @@ public class GeoJsonUtils {
     public final String noFlyZone;
     public final String landmarks;
 
+    /**
+     * Initialize a GeoJsonUtils object by setting the server address of
+     * the part of website that stores W3W translation information
+     * @param name the name of the server
+     * @param port the port used to connect to the server
+     */
     public GeoJsonUtils(String name, String port) {
         // url of the server location
         String server = "HTTP://" + name + ":" + port + "/buildings/";

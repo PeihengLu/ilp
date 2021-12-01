@@ -9,7 +9,7 @@ public class DatabaseUtils {
     public final String server;
 
     /**
-     * construct a DatabaseUtils object with machine name, port and name of database, and create new
+     * construct a DatabaseUtils object with database server name, port and name of database, and create new
      * deliveries and flightpath tables
      * @param name machine name of the database server
      * @param port port to access database
@@ -27,7 +27,7 @@ public class DatabaseUtils {
 
     /**
      * create new deliveries and flightpath tables
-     * @throws SQLException
+     * @throws SQLException if connection error to the database server occurs in the process
      */
     private void createTables() throws SQLException {
         Connection connection = DriverManager.getConnection(this.server);
@@ -61,8 +61,8 @@ public class DatabaseUtils {
 
 
     /**
-     *  retrieve the orders from database server
-     * @param date the data of order
+     *  retrieve the orders for a specified date from database server
+     * @param date the date of the orders
      * @return a list of lists containing order number and delivery address
      */
     public List<String[]> retrieveOrders(String date) {

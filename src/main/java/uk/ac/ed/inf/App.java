@@ -39,6 +39,7 @@ public class App
         String name = "localhost";
         // name of the output geojson file storing the path
         String outputFile = "../" + String.join("-", "drone", day, month, year) + ".geojson";
+        // name of the output file if the software failed to produce a complete path
         String outputFileFailed = "../" + String.join("-", "drone", day, month, year) + "failed" + ".geojson";
 
         // connect menus to the server

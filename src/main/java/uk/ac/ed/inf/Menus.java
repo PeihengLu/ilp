@@ -53,8 +53,8 @@ public class Menus {
 
     /**
      * parse the information from the server into a list of shops
-     * @param menus
-     * @return
+     * @param menus the String read from the Json file
+     * @return a list of Shops that appear in the orders
      */
     private ArrayList<Shop> getShops(String menus) {
         Type shopListType = new TypeToken<ArrayList<Shop>>() {}.getType();
@@ -73,6 +73,7 @@ public class Menus {
      * @param shops the Shop instances parsed from the server
      */
     private void getItemInfo(ArrayList<Shop> shops) {
+        // go through the list of Shops and populate the provider and prices HashMap
         for (Shop shop: shops) {
             ArrayList<Item> menu = shop.getMenu();
             for (Item i : menu) {
@@ -85,7 +86,7 @@ public class Menus {
 
     /**
      * check if an order complies with our delivery policy and calculate
-     * the total price if it's legal
+     * the total price if it's legal, and populate the shopped set
      * @param items items from an order
      * @return -1 if item number or shop composition is against our
      * policy or not all food can be found, returns delivery cost otherwise
@@ -93,7 +94,7 @@ public class Menus {
     public int getDeliveryCost(String... items) {
         // an order can only have [1, 4] items
         if (items.length < 1 || items.length > 4) return -1;
-        // record the name of shops visited for one order
+        // clear the set recording the name of shops visited for one order
         shopped.clear();
         // 50p of delivery charges
         int val = 50;
@@ -117,7 +118,7 @@ public class Menus {
 
     /**
      * get the shops to visit for an order after calculating its delivery cost
-     * @return
+     * @return the set of Shop objects representing the shops that need to be visited for one order
      */
     public HashSet<Shop> getShopped() {
         return shopped;
