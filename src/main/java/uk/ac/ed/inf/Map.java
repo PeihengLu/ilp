@@ -60,11 +60,10 @@ public class Map {
                     // three times as much moves for A* to reach the destination
                     weight = weight * 3;
                     intersect[i][j] = true;
-                    intersect[j][i] = true;
                 } else {
                     intersect[i][j] = false;
-                    intersect[j][i] = false;
                 }
+                intersect[j][i] = intersect[i][j];
                 graph[i][j] = weight;
                 graph[j][i] = weight;
             }
@@ -173,11 +172,11 @@ public class Map {
 
     /**
      * get the number of moves needed by the drone to move between two locations
-     * or a very pessimistic estimation of the distance if the path intersect with
+     * or a very pessimistic estimation of the moves needed if the path intersect with
      * no-fly zones
      * @param locA the name of one location
      * @param locB the name of the other location
-     * @return the distance for drone to cover to travel between locA and locB
+     * @return the moves the drone need to travel between locA and locB
      */
     public int getDistance(String locA, String locB) {
         return graph[locationNames.indexOf(locA)][locationNames.indexOf(locB)];

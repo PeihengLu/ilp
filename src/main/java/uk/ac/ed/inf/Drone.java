@@ -19,9 +19,9 @@ public class Drone {
     private boolean arrived;
     /** how many moves the drone got left */
     private int moves;
-    /** the name of the locations that the drone needs to follow for current order */
+    /** the name of the locations (keypoints) that the drone needs to follow for current order */
     private final Queue<String> path = new LinkedList<>();
-    /** the waypoints (all existing locations) the drone needs to follow for a target location */
+    /** the waypoints the drone needs to follow for a target location (keypoint) */
     private final Queue<String> waypoints = new LinkedList<>();
     /** store the points the drone has taken and write it to the output geojson file */
     private final List<Point> pathRec = new ArrayList<>();
@@ -57,9 +57,9 @@ public class Drone {
     }
 
     /**
-     *
-     * @param locA
-     * @param locB
+     * find the path using next array after all-pairs algorithm is run
+     * @param locA the location name for starting location
+     * @param locB the location name for target location
      * @return -1 if error occurs, 0 if no errors and no intersect, 1 if any part of the retrieved path intersect with
      *          the no-fly zones
      */
@@ -97,9 +97,11 @@ public class Drone {
     public boolean deliverOrders(Queue<Order> orders) {
         int totalOrders = orders.size();
         int orderSent = 0;
+        // total amount of money earned
         int totalEarned = 0;
+        // total possible earnings from all orders
         int totalCost = 0;
-        // go through all the orders and plan the path for each
+        // go through all the orders and plan the path for each one
         while (!orders.isEmpty()) {
             Order currOrder = orders.poll();
             totalCost += currOrder.deliveryCost;
@@ -109,11 +111,10 @@ public class Drone {
                 continue;
             }
 
-            // if the program gets here, then the order will be carried out,
-            // so store it to our orders database
+            // if the program gets here, then the order will be carried out, so store it to our orders database table
             databaseUtils.storeOrder(currOrder.orderNo, currOrder.locationName, currOrder.deliveryCost);
 
-            if (!followPathForOrder(currOrder)) {
+            if (!followPathForOrder(currOrder.orderNo)) {
                 System.err.printf("Failed to complete order %s due to planning error\n", currOrder.orderNo);
                 return false;
             }
@@ -190,10 +191,10 @@ public class Drone {
 
     /**
      * follow the pre-planned path for an order
-     * @param currOrder the order number of the order currently taken
+     * @param orderNo the order number of the order currently taken
      * @return true if no errors occurred on the path
      */
-    private boolean followPathForOrder(Order currOrder) {
+    private boolean followPathForOrder(String orderNo) {
         while (!path.isEmpty()) {
             String keypoint = path.poll();
             int intersected = findPath(currLocName, keypoint);
@@ -203,18 +204,23 @@ public class Drone {
             // if any part of the path intersect with no-fly zones, use A star instead
             if (intersected == 1) {
                 Stack<Integer> plannedPath = planAStar(getLocations().get(keypoint));
-                moveAStar(currOrder.orderNo, plannedPath);
+                moveAStar(orderNo, plannedPath);
             }
-            if (!followWaypoints(currOrder.orderNo)) return false;
+            if (!followWaypoints(orderNo)) return false;
 
             // after reaching every keypoint hover for one step
             hover();
             planNextMove();
-            makeNextMove(currOrder.orderNo);
+            makeNextMove(orderNo);
         }
         return true;
     }
 
+    /**
+     * Following the waypoints to reach a keypoint in path
+     * @param orderNo the order the drone is carrying now
+     * @return True if no error occurs, false otherwise
+     */
     private boolean followWaypoints(String orderNo) {
         // follow the path of one lag of the journey to reach a keypoint in current order
         while (!waypoints.isEmpty()) {
@@ -252,7 +258,10 @@ public class Drone {
      */
     private boolean returnToAppleton() {
         // fly back to Appleton tower
-        findPath(currLocName, "Appleton Tower");
+        if (findPath(currLocName, "Appleton Tower") == 1) {
+            Stack<Integer> angles = planAStar(LongLat.AT);
+            moveAStar("NoOrder", angles);
+        }
         // follow the path to reach Appleton
         return followWaypoints("NoOrder");
     }
@@ -274,8 +283,8 @@ public class Drone {
 
     /**
      * round the optimal degree calculated to 10 degree precision
-     * @param toRound
-     * @return
+     * @param toRound the double number to be round to the nearest 10 degree
+     * @return the number rounded to the nearest 10 degree
      */
     public static int roundToTen(double toRound) {
         return (int) (Math.round(toRound / 10) * 10);
@@ -285,6 +294,7 @@ public class Drone {
      * get the next location to go to after calculating the angle
      */
     public void planNextMove() {
+        // making sure the angle is 10 degree precision
         if (angle % 10 != 0 && angle != -999) {
             System.err.println("An invalid move");
         }
@@ -298,7 +308,8 @@ public class Drone {
 
     /**
      * set the target location of the drone for one lag
-     * @param targetLoc
+     * @param targetLoc the coordinate of the target location
+     * @param targetLocName the name of target location for one lag
      */
     public void setTargetLoc(LongLat targetLoc, String targetLocName) {
         this.targetLoc = targetLoc;
@@ -360,9 +371,10 @@ public class Drone {
     /**
      * plan the path with AStar
      * @param target the LongLat coordinate of the location to reach
-     * @return true if a path is viable with current accuracy, false otherwise
+     * @return the angles representing the planned path, false otherwise
      */
     public Stack<Integer> planAStar(LongLat target) {
+        System.out.println("Using A Star");
         LongLat cur = currLoc;
         Node start = new Node(cur, 0, cur.distanceTo(target), 0, null);
         // contains the node we have encountered but haven't analysed yet
@@ -422,7 +434,7 @@ public class Drone {
     }
 
     /**
-     * Follow the path planned by
+     * Follow the path planned by A*
      * @param orderNo the order number of the order being carried out
      * @param pathPlanned the list of angles planned by A*
      * @return true if the path can be followed successfully

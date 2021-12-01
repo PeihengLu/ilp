@@ -36,6 +36,7 @@ public class App
         String dbPort = args[4];
         // date of the orders to retrieve
         String date = String.join("-", year, month, day);
+        System.out.println(date);
         // name of the server for connection
         String name = "localhost";
         // name of the output geojson file storing the path
@@ -55,39 +56,40 @@ public class App
         drone = new Drone(LongLat.AT, "Appleton Tower", databaseUtils);
 
 
-        // get the no-fly zones
+        // get the no-fly zones from website and store them in the drone
         if (!getNoFlyZones()) {
             System.err.println("Cannot get the information about no fly zones");;
             return;
         }
-        // get all the landmarks and add them to locations known by the drone
+        // get all the landmarks from website and add them to locations known by the drone
         if (!getLandmarks()) {
             System.err.println("Cannot get the information about landmarks");;
             return;
         }
-        // get the shop information and add them to locations known by the drone
+        // get the information about all the shops that need to be visited for this order and add them to locations known by the drone
         if (!getShopsInfo()) {
             System.err.println("Cannot get the information about shops");;
             return;
         }
-        // retrieve all orders for a specific date
+        // retrieve all orders for the specified date
         if (!getOrders(date)) {
             System.err.printf("Error retrieving orders for %s", date);
             return;
         }
 
         // after all locations are loaded into the map, initialize the three arrays representing the
-        // graph to
+        // graph and run the all-pairs shortest path algorithm
         int s = drone.getLocationNames().size();
         drone.initializeGraph(s);
 
-
+        // deliver the orders
         if (!drone.deliverOrders(orders)){
             GeoJsonUtils.writeGeoJson(FeatureCollection.fromFeature(Feature.fromGeometry(LineString.fromLngLats(drone.getPathRecord()))), outputFileFailed);
             System.err.println("Failed to deliver the orders or return to Appleton");
             return;
         }
 
+        // retrieve the path taken by the drone and write it to the result file
         LineString result = LineString.fromLngLats(drone.getPathRecord());
         GeoJsonUtils.writeGeoJson(FeatureCollection.fromFeature(Feature.fromGeometry(result)), outputFile);
 
@@ -141,7 +143,7 @@ public class App
     /**
      * get the information of all the shops providing food for the service, and add them
      * to the map of the drone if it's not already added
-     * @return
+     * @return true if no error occurs, false otherwise
      */
     private static boolean getShopsInfo() {
         // get all the shops
