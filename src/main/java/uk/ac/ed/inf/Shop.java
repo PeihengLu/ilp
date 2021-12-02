@@ -11,7 +11,7 @@ public class Shop {
     public final String name;
     /** location of the shop in W3W address format */
     public final String location;
-    /** list of items for sale in the shop, set to private as final doesn't offer protection for ArrayList */
+    /** list of items for sale in the shop, set to private as final doesn't offer protection for the content of ArrayList */
     private final ArrayList<Item> menu;
 
 
