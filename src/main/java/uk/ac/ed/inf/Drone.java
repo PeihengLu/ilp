@@ -302,8 +302,14 @@ public class Drone {
             }
             // if any part of the path intersect with no-fly zones, use A star instead
             if (intersected == 1) {
-                Stack<Integer> plannedPath = planAStar(getLocations().get(keypoint));
+                Stack<Integer> plannedPath = planAStar(map.locations.get(keypoint));
                 moveAStar(orderNo, plannedPath);
+                currLocName = keypoint;
+                // after reaching every keypoint hover for one step
+                hover();
+                planNextMove();
+                makeNextMove(orderNo);
+                continue;
             }
             if (!followWaypoints(orderNo)) return false;
 
@@ -393,8 +399,22 @@ public class Drone {
         }
 
         double ang = Math.toDegrees(Math.atan2(targetLoc.lat - currLoc.lat, targetLoc.lng - currLoc.lng));
-        if (ang < 0) ang += 360;
-        angle = roundToTen(ang);
+        angle = formatAngle(roundToTen(ang));
+    }
+
+    /**
+     * format angle produced by clockCounterclock and calculateAngle into between 0 and 350
+     * @param angle the angle produced by clockCounterclock and calculateAngle
+     * @return the formatted angle in range [0, 350]
+     */
+    private int formatAngle(int angle) {
+        if (angle < 0) {
+            return angle + 360;
+        }
+        if (angle > 350) {
+            return angle - 360;
+        }
+        return angle;
     }
 
     /**
@@ -431,7 +451,7 @@ public class Drone {
     }
 
     /**
-     * change currPos to nextPos
+     * making a move by change currPos to nextPos
      */
     public void makeNextMove(String orderNo) {
         addToPathRec(currLoc);
@@ -457,19 +477,18 @@ public class Drone {
         int turn = 1;
         while (true) {
             if (!map.intersectNFZ(currLoc, currLoc.nextPosition(angle + turn * 10))) {
-                this.angle = angle + turn * 10;
+                this.angle = formatAngle(angle + turn * 10);
                 planNextMove();
                 break;
             }
             if (!map.intersectNFZ(currLoc, currLoc.nextPosition(angle - turn * 10))) {
-                this.angle = angle - turn * 10;
+                this.angle = formatAngle(angle - turn * 10);
                 planNextMove();
                 break;
             }
             turn++;
         }
     }
-
 
     /**
      * plan the path with AStar
