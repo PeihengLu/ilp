@@ -8,10 +8,10 @@ import java.util.ArrayList;
  */
 public class Shop {
     /** name of the shop */
-    private final String name;
+    public final String name;
     /** location of the shop in W3W address format */
-    private final String location;
-    /** list of items for sale in the shop */
+    public final String location;
+    /** list of items for sale in the shop, set to private as final doesn't offer protection for ArrayList */
     private final ArrayList<Item> menu;
 
 
@@ -26,24 +26,6 @@ public class Shop {
         this.location = location;
         this.menu = menu;
     }
-
-    /**
-     * get the name of the shop
-     * @return name of the shop
-     */
-    public String getName() {
-        return name;
-    }
-
-
-    /**
-     * get the location of the shop
-     * @return location of the shop in W3W format
-     */
-    public String getLocation() {
-        return location;
-    }
-
 
     /**
      * get the items for sale in the shop

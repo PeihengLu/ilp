@@ -19,7 +19,7 @@ public class Map {
     public Integer[][] graph;
     /** storing the vertices in shortest path algorithm for us to reconstruct the path */
     public Integer[][] next;
-
+    /** storing information about whether the direct path between two locations intersect with no-fly zones */
     public Boolean[][] intersect;
     /** no-fly zones */
     public final List<Polygon> noFlyZones = new ArrayList<Polygon>();
@@ -72,7 +72,8 @@ public class Map {
 
 
     /**
-     * Floyd-Warshall all pairs shortest path algorithm
+     * Floyd-Warshall all pairs shortest path algorithm, graph will store the shortest number
+     * of moves needed between two locations, and next will help us retrieve the shortest path found
      */
     public void shortestPath() {
         int s = locationNames.size();
@@ -99,11 +100,11 @@ public class Map {
     }
 
     /**
-     * check if a line represented by p1 and p2 intercept with any edges of no-fly zones, also p2 cannot escape
-     * our confinement area
+     * check if a line represented by p1 and p2 intercept with any edges of no-fly zones, also if p2 is
+     * within our confinement area
      * @param p1 starting point
      * @param p2 target location
-     * @return false if it doesn't go into the no-fly zones or confinement area, true otherwise
+     * @return false if flight from p1 to p2 doesn't go into the no-fly zones or out of confinement area, true otherwise
      */
     public boolean intersectNFZ(LongLat p1, LongLat p2) {
         if (!p2.isConfined()) return true;
@@ -138,7 +139,7 @@ public class Map {
      * check if two lines intercept with each other, ingenious solution from Bryce Boe:
      * https://bryceboe.com/2006/10/23/line-segment-intersection-algorithm/
      * using the counterclockwise helper function to deal with interception problems, cannot
-     * deal with collinearity but suffice for our use
+     * deal with collinearity but suffice for our use. More detailed description in document.
      * @param A one endpoint of line 1
      * @param B another endpoint of line 1
      * @param C one endpoint of line 2

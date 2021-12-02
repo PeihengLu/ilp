@@ -3,7 +3,8 @@ package uk.ac.ed.inf;
 
 /**
  * storing the information of a square by storing the Longitude and
- * Latitude of the southWest and northEast corner
+ * Latitude of the southWest and northEast corner, necessary for Gson to
+ * parse W3W Json file
  */
 public class Square {
     /** southwest corner of this square **/

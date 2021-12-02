@@ -10,17 +10,19 @@ import java.util.List;
  * helper methods to read and write
  */
 public class GeoJsonUtils {
+    /** url to geojson file storing no-fly zones */
     public final String noFlyZone;
+    /** url to geojson file storing landmarks */
     public final String landmarks;
 
     /**
      * Initialize a GeoJsonUtils object by setting the server address of
-     * the part of website that stores W3W translation information
+     * the part of website that stores geoJson information
      * @param name the name of the server
      * @param port the port used to connect to the server
      */
     public GeoJsonUtils(String name, String port) {
-        // url of the server location
+        // url to the part of website storing geoJson information
         String server = "HTTP://" + name + ":" + port + "/buildings/";
         // location of the menus file on the server
         noFlyZone = server + "no-fly-zones.geojson";
@@ -30,8 +32,8 @@ public class GeoJsonUtils {
 
     /**
      * read a geojson file from the server
-     * @param url the address of the file to read
-     * @return null if error occurs at connection,
+     * @param url the address of the geojson file to read
+     * @return null if error occurs at connection, a list of features otherwise
      */
     public static List<Feature> readGeoJson(String url) {
         // start HTTP connection with the server
@@ -50,7 +52,7 @@ public class GeoJsonUtils {
 
 
     /**
-     * writing the path created to the output file corresponding to that day's order
+     * writing the recorded path to the output file corresponding to a specified date
      * @param featureCollection the LineString cast into a FeatureCollection for the purpose of
      *                          serialization
      * @param filename the name of the designated output file containing the path

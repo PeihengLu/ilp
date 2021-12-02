@@ -6,11 +6,12 @@ package uk.ac.ed.inf;
  * also containing useful functions for calculating the movement of the drone
  */
 public class LongLat {
-    /** longitude and latitude of current object */
+    /** longitude of current object */
     public final double lng;
+    /** latitude of current object */
     public final double lat;
 
-    // Below are some possibly useful coordinates of key locations
+    // Below are some useful coordinates of key locations
     /** Appleton Tower */
     public static final LongLat AT = new LongLat(-3.186874, 55.944494);
     /** Forest Hill on Top Left */
@@ -24,8 +25,11 @@ public class LongLat {
 
     /** distance for one movement in degrees */
     public static final double distance = 0.00015;
-    /** threshold for determining where two points are close **/
+    /** threshold for determining whether two points are close to each other **/
     public static final double threshold = 0.00015;
+    /** threshold for determining whether two points are close to each other, used to determine if two Nodes can
+     * be considered equal in A* algorithm **/
+    public static final double veryCloseThreshold = threshold / 5;
 
 
     /**
@@ -76,7 +80,7 @@ public class LongLat {
      * @return the new LongLat object after movement
      */
     public LongLat nextPosition(int angle) {
-        // the drone is hovering when angle if -999
+        // the drone is hovering when angle is -999
         if (angle == -999) return this;
         return new LongLat(this.lng + distance*Math.cos(Math.toRadians(angle)), this.lat + distance*Math.sin(Math.toRadians(angle)));
     }
@@ -87,6 +91,6 @@ public class LongLat {
      * @return true if distance between this and other is less than threshold / 5 (0.00003 here)
      */
     public boolean veryCloseTo(LongLat other) {
-        return distanceTo(other) < threshold / 5;
+        return distanceTo(other) < veryCloseThreshold;
     }
 }

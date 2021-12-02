@@ -13,6 +13,7 @@ import java.net.http.HttpResponse;
 public class ServerUtils {
     /** url directed to the file to read */
     private final String url;
+    /** static http client for connection */
     private static final HttpClient client = HttpClient.newHttpClient();
 
     /**

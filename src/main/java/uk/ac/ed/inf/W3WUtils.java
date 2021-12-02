@@ -7,9 +7,14 @@ import com.google.gson.Gson;
  * class providing decoding functionality for what three words address
  */
 public class W3WUtils {
+    /** the url to the part of website where the w3w translation information is stored */
     public final String server;
 
-
+    /**
+     * initialize a W3WUtils object using the machine name and port of the web server
+     * @param name the machine name of web server
+     * @param port the port of the web server
+     */
     public W3WUtils(String name, String port) {
         // address of the web server storing location information encoded in the
         // three words

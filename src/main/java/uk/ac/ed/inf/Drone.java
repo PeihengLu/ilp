@@ -15,7 +15,7 @@ public class Drone {
     /** the target of the current lag of journey */
     private LongLat targetLoc;
     private String targetLocName;
-    /** whether the drone is close to target location */
+    /** whether the drone is close to the current target location */
     private boolean arrived;
     /** how many moves the drone got left */
     private int moves;
@@ -153,8 +153,8 @@ public class Drone {
         if (currOrder.shops.size() == 2) {
             // the drone needs to hover over the two shops and the delivery address
             hover = 3;
-            String shopAName = currOrder.shops.get(0).getName();
-            String shopBName = currOrder.shops.get(1).getName();
+            String shopAName = currOrder.shops.get(0).name;
+            String shopBName = currOrder.shops.get(1).name;
             // decide which ordering of shops to visit gives the shortest path
             if (map.getDistance(start, shopAName) + (map.getDistance(end, shopBName)) >
                     map.getDistance(start, shopBName) + (map.getDistance(end, shopAName))) {
@@ -178,7 +178,7 @@ public class Drone {
             // the drone needs to hover over the shop and the delivery address
             hover = 2;
             // only one shop for this order, no comparison needed, just check availability
-            String shopName = currOrder.shops.get(0).getName();
+            String shopName = currOrder.shops.get(0).name;
             if (map.getDistance(start, shopName) + map.getDistance(shopName, end)
                     + map.getDistance(end, "Appleton Tower") + hover > moves) {
                 return false;
@@ -240,6 +240,7 @@ public class Drone {
      * @return false if error occurs when following the preplanned path or storing the path to database
      */
     private boolean followOneLag(String orderNo) {
+        // stepping towards target location until drone has arrived
         while (!arrived) {
             calculateAngle();
             if (moves == 0) {
@@ -314,7 +315,7 @@ public class Drone {
     public void setTargetLoc(LongLat targetLoc, String targetLocName) {
         this.targetLoc = targetLoc;
         this.targetLocName = targetLocName;
-        // a new lag has started so arrived is refreshed to false
+        // a new lag has started so arrived is reset to false
         this.arrived = false;
     }
 
@@ -346,7 +347,6 @@ public class Drone {
 
     /**
      * get out of the no-fly zone using the clockwise counterclockwise maneuver explained in the document
-     * use preAngle to keep the momentum and help avoid getting stuck
      */
     private void clockCounterclock() {
         System.out.println("needs to avoid NFZ");
@@ -365,7 +365,6 @@ public class Drone {
             turn++;
         }
     }
-
 
 
     /**
@@ -463,14 +462,14 @@ public class Drone {
 
     //---------------------------------- populating map with information -------------------------------------/
     /**
-     * add no-fly zones to the map the drone is storing
+     * add a no-fly zones to the map the drone stores
      */
     public void addNFZ(Polygon nfz) {
         map.noFlyZones.add(nfz);
     }
 
     /**
-     *
+     * add an entry to the location hashmap
      * @param name name of the location
      * @param loc LongLat object storing the coordinate of the locations
      */
@@ -481,7 +480,7 @@ public class Drone {
 
     /**
      * add to the recorded path to write into the geojson file
-     * @param longLat
+     * @param longLat the location of drone in current step
      */
     public void addToPathRec(LongLat longLat) {
         Point point = Point.fromLngLat(longLat.lng, longLat.lat);
@@ -490,7 +489,7 @@ public class Drone {
 
     /**
      * return the locations hashmap in the map object
-     * @return locations
+     * @return locations hashmap
      */
     public HashMap<String, LongLat> getLocations() {
         return map.locations;
@@ -498,15 +497,15 @@ public class Drone {
 
     /**
      * return the locationsNames list in the map object
-     * @return locationNames
+     * @return locationNames list
      */
     public List<String> getLocationNames() {
         return map.locationNames;
     }
 
     /**
-     * get next location in the path for current order
-     * @return the next location in the path for current order
+     * get the path recorded by the drone
+     * @return path record
      */
     public List<Point> getPathRecord() {
         return pathRec;

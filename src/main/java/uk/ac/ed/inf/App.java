@@ -2,6 +2,7 @@ package uk.ac.ed.inf;
 
 import com.mapbox.geojson.*;
 import com.mapbox.geojson.Polygon;
+import org.mortbay.util.StringUtil;
 
 import java.util.*;
 
@@ -10,15 +11,18 @@ import java.util.*;
  */
 public class App 
 {
-    /** GeoJsonUtils, DatabaseUtils and W3WUtils services */
+    /** GeoJsonUtils services*/
     private static GeoJsonUtils geoJsonUtils;
+    /** DatabaseUtils services */
     private static DatabaseUtils databaseUtils;
+    /** W3WUtils services */
     private static W3WUtils wUtils;
 
     /** create a menus object for calculating delivery cost and information about the shops */
     private static Menus menus;
     /** drone object to store drone's location and energy information, also the planned path for it to follow*/
     private static Drone drone;
+    /** the list of Orders ordered by their delivery cost, from highest to lowest */
     private static final Queue<Order> orders = new PriorityQueue<>(Collections.reverseOrder());
 
     public static void main( String[] args)
@@ -29,12 +33,12 @@ public class App
             System.err.println("You should enter 5 arguments: day, month, year, webserver port and database port!");
         }
         // fetch the commandline arguments and store them in variables
-        String day = args[0];
-        String month = args[1];
+        String day = String.format("%02d", Integer.parseInt(args[0]));
+        String month = String.format("%02d", Integer.parseInt(args[1]));
         String year = args[2];
         String port = args[3];
         String dbPort = args[4];
-        // date of the orders to retrieve
+        // date of the orders to retrieve, use the same YYYY-MM-DD format as the database
         String date = String.join("-", year, month, day);
         System.out.println(date);
         // name of the server for connection
@@ -149,13 +153,13 @@ public class App
         // get all the shops
         Collection<Shop> allShops = menus.provider.values();
         for (Shop shop: allShops) {
-            Location loc = wUtils.convertW3W(shop.getLocation());
+            Location loc = wUtils.convertW3W(shop.location);
             if (loc == null) {
                 System.err.println("Problem reading W3W address file");
                 return false;
             }
-            if (!drone.getLocations().containsKey(shop.getName())) {
-                drone.addLocation(shop.getName(), loc.coordinates);
+            if (!drone.getLocations().containsKey(shop.name)) {
+                drone.addLocation(shop.name, loc.coordinates);
             }
         }
         return true;

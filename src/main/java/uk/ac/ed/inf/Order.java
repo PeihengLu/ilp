@@ -7,12 +7,17 @@ import java.util.List;
  * other with a metric, currently only the deliveryCost
  */
 public class Order implements Comparable<Order> {
+    /** order number */
     public final String orderNo;
     /** the name of the order delivery address, simply its corresponding w3w word */
     public final String locationName;
+    /** the items contained in the order */
     public final List<String> items;
+    /** the coordinate of the delivery address */
     public final LongLat deliverAddress;
+    /** the list of the shops that needs to be visited for an order */
     public final List<Shop> shops;
+    /** how much the user needs to pay for this order */
     public final int deliveryCost;
 
 
