@@ -4,36 +4,68 @@ import com.mapbox.geojson.*;
 
 import java.util.*;
 
+/**
+ * The onboard system of the drone that plans, follows and records the path. As well as
+ * implementation of obstacle avoidance
+ */
 public class Drone {
-    /** the current location of the drone */
+    /**
+     * the current location of the drone
+     */
     private LongLat currLoc;
+    /**
+     * name of the start location of the drone of the current lag
+     */
     private String currLocName;
-    /** angle to reach the next location */
+    /**
+     * angle to reach the next location
+     */
     private int angle;
-    /** where to go next*/
+    /**
+     * where to go next
+     */
     private LongLat nextLoc;
-    /** the target of the current lag of journey */
+    /**
+     * the target coordinate of the current lag of journey
+     */
     private LongLat targetLoc;
+    /**
+     * the target location name of the current lag of journey
+     */
     private String targetLocName;
-    /** whether the drone is close to the current target location */
+    /**
+     * whether the drone is close to the current target location
+     */
     private boolean arrived;
-    /** how many moves the drone got left */
+    /**
+     * how many moves the drone got left
+     */
     private int moves;
-    /** the name of the locations (keypoints) that the drone needs to follow for current order */
+    /**
+     * the name of the locations (keypoints) that the drone needs to follow for current order
+     */
     private final Queue<String> path = new LinkedList<>();
-    /** the waypoints the drone needs to follow for a target location (keypoint) */
+    /**
+     * the waypoints the drone needs to follow for a target location (keypoint)
+     */
     private final Queue<String> waypoints = new LinkedList<>();
-    /** store the points the drone has taken and write it to the output geojson file */
+    /**
+     * store the points the drone has taken and write it to the output geojson file
+     */
     private final List<Point> pathRec = new ArrayList<>();
-    /** to record the path for AStarMove */
+    /**
+     * to record the path for AStarMove
+     */
     DatabaseUtils databaseUtils;
-    /** map object storing useful locations for orders on the specified date */
+    /**
+     * map object storing useful locations for orders on the specified date
+     */
     private final Map map = new Map();
-
 
 
     /**
      * construct the Drone object with where the Drone is deployed from
+     *
      * @param currLoc the starting location of the drone
      */
     public Drone(LongLat currLoc, String locName, DatabaseUtils databaseUtils) {
@@ -45,7 +77,9 @@ public class Drone {
     }
 
 
-    /** initialize the three arrays storing the graph information and run the all pairs shortest path algorithm
+    /**
+     * initialize the three arrays storing the graph information and run the all pairs shortest path algorithm
+     *
      * @param size the size of the graph, same as number of locations in the map
      */
     public void initializeGraph(int size) {
@@ -58,10 +92,11 @@ public class Drone {
 
     /**
      * find the path using next array after all-pairs algorithm is run
+     *
      * @param locA the location name for starting location
      * @param locB the location name for target location
      * @return -1 if error occurs, 0 if no errors and no intersect, 1 if any part of the retrieved path intersect with
-     *          the no-fly zones
+     * the no-fly zones
      */
     public int findPath(String locA, String locB) {
         int indA = map.locationNames.indexOf(locA);
@@ -90,9 +125,10 @@ public class Drone {
     /**
      * check the availability of the current most profitable order, and deliver it if it is,
      * otherwise check the next order until the orders are all checked
+     *
      * @param orders The list of orders to deliver on a specified date
      * @return true if the drone manages to go through the orders and return to Appleton Tower,
-     *          false otherwise
+     * false otherwise
      */
     public boolean deliverOrders(Queue<Order> orders) {
         int totalOrders = orders.size();
@@ -119,7 +155,7 @@ public class Drone {
                 return false;
             }
 
-            orderSent ++;
+            orderSent++;
             totalEarned += currOrder.deliveryCost;
         }
 
@@ -138,9 +174,10 @@ public class Drone {
      * will leave enough battery for the drone to return to Appleton Tower, add the shops, delivery address
      * for the order to path if the drone has enough power. It also compares the shortest path if two shops
      * need to be visited.
+     *
      * @param currOrder the order number of the order whose availability needs to be checked
      * @return true if the drone can finish the order and has enough power to return to AT,
-     *          false otherwise
+     * false otherwise
      */
     private boolean checkAvailability(Order currOrder) {
         // name of the current location of the drone
@@ -189,8 +226,70 @@ public class Drone {
         return true;
     }
 
+
+    //---------------------------------- populating map with information -------------------------------------/
+
+    /**
+     * add a no-fly zones to the map the drone stores
+     */
+    public void addNFZ(Polygon nfz) {
+        map.noFlyZones.add(nfz);
+    }
+
+    /**
+     * add an entry to the location hashmap
+     *
+     * @param name name of the location
+     * @param loc  LongLat object storing the coordinate of the locations
+     */
+    public void addLocation(String name, LongLat loc) {
+        map.locations.put(name, loc);
+        map.locationNames.add(name);
+    }
+
+    /**
+     * add to the recorded path to write into the geojson file
+     *
+     * @param longLat the location of drone in current step
+     */
+    public void addToPathRec(LongLat longLat) {
+        Point point = Point.fromLngLat(longLat.lng, longLat.lat);
+        pathRec.add(point);
+    }
+
+    /**
+     * return the locations hashmap in the map object
+     *
+     * @return locations hashmap
+     */
+    public HashMap<String, LongLat> getLocations() {
+        return map.locations;
+    }
+
+    /**
+     * return the locationsNames list in the map object
+     *
+     * @return locationNames list
+     */
+    public List<String> getLocationNames() {
+        return map.locationNames;
+    }
+
+    /**
+     * get the path recorded by the drone
+     *
+     * @return path record
+     */
+    public List<Point> getPathRecord() {
+        return pathRec;
+    }
+
+
+    // ----------------------------------- following the path ---------------------------------- //
+
     /**
      * follow the pre-planned path for an order
+     *
      * @param orderNo the order number of the order currently taken
      * @return true if no errors occurred on the path
      */
@@ -218,6 +317,7 @@ public class Drone {
 
     /**
      * Following the waypoints to reach a keypoint in path
+     *
      * @param orderNo the order the drone is carrying now
      * @return True if no error occurs, false otherwise
      */
@@ -236,6 +336,7 @@ public class Drone {
 
     /**
      * following the path to one of the waypoints, a lag is the trip between two waypoints
+     *
      * @param orderNo the order number of the current order the drone is working on
      * @return false if error occurs when following the preplanned path or storing the path to database
      */
@@ -255,6 +356,7 @@ public class Drone {
 
     /**
      * return the drone to Appleton tower
+     *
      * @return true if the drone made it back to the Tower, false otherwise
      */
     private boolean returnToAppleton() {
@@ -267,7 +369,20 @@ public class Drone {
         return followWaypoints("NoOrder");
     }
 
-    //--------------------------- drone planning and movement in normal situation --------------------------------//
+    //--------------------------- methods for drone planning and movement in normal situation --------------------------------//
+
+    /**
+     * set the target location of the drone for one lag
+     *
+     * @param targetLoc     the coordinate of the target location
+     * @param targetLocName the name of target location for one lag
+     */
+    public void setTargetLoc(LongLat targetLoc, String targetLocName) {
+        this.targetLoc = targetLoc;
+        this.targetLocName = targetLocName;
+        // a new lag has started so arrived is reset to false
+        this.arrived = false;
+    }
 
     /**
      * calculate the optimal angle to reach the desired location
@@ -284,11 +399,19 @@ public class Drone {
 
     /**
      * round the optimal degree calculated to 10 degree precision
+     *
      * @param toRound the double number to be round to the nearest 10 degree
      * @return the number rounded to the nearest 10 degree
      */
     public static int roundToTen(double toRound) {
         return (int) (Math.round(toRound / 10) * 10);
+    }
+
+    /**
+     * call this instead of getAngle when the drone has reached a destination
+     */
+    public void hover() {
+        this.angle = -999;
     }
 
     /**
@@ -308,30 +431,11 @@ public class Drone {
     }
 
     /**
-     * set the target location of the drone for one lag
-     * @param targetLoc the coordinate of the target location
-     * @param targetLocName the name of target location for one lag
-     */
-    public void setTargetLoc(LongLat targetLoc, String targetLocName) {
-        this.targetLoc = targetLoc;
-        this.targetLocName = targetLocName;
-        // a new lag has started so arrived is reset to false
-        this.arrived = false;
-    }
-
-    /**
-     * call this instead of getAngle when the drone has reached a destination
-     */
-    public void hover() {
-        this.angle = -999;
-    }
-
-    /**
      * change currPos to nextPos
      */
     public void makeNextMove(String orderNo) {
         addToPathRec(currLoc);
-        // store flight path into the database
+        // store flight path into the database flightpath table
         if (!databaseUtils.storePath(orderNo, currLoc, angle, nextLoc)) {
             System.err.println("Problem writing to flightpath table");
         }
@@ -340,7 +444,7 @@ public class Drone {
             arrived = true;
             currLocName = targetLocName;
         }
-        moves --;
+        moves--;
     }
 
     //---------------------- drone planning when needed to avoid obstacle -------------------------------//
@@ -369,6 +473,7 @@ public class Drone {
 
     /**
      * plan the path with AStar
+     *
      * @param target the LongLat coordinate of the location to reach
      * @return the angles representing the planned path, false otherwise
      */
@@ -434,7 +539,8 @@ public class Drone {
 
     /**
      * Follow the path planned by A*
-     * @param orderNo the order number of the order being carried out
+     *
+     * @param orderNo     the order number of the order being carried out
      * @param pathPlanned the list of angles planned by A*
      * @return true if the path can be followed successfully
      */
@@ -457,57 +563,5 @@ public class Drone {
         }
 
         return true;
-    }
-
-
-    //---------------------------------- populating map with information -------------------------------------/
-    /**
-     * add a no-fly zones to the map the drone stores
-     */
-    public void addNFZ(Polygon nfz) {
-        map.noFlyZones.add(nfz);
-    }
-
-    /**
-     * add an entry to the location hashmap
-     * @param name name of the location
-     * @param loc LongLat object storing the coordinate of the locations
-     */
-    public void addLocation(String name, LongLat loc) {
-        map.locations.put(name, loc);
-        map.locationNames.add(name);
-    }
-
-    /**
-     * add to the recorded path to write into the geojson file
-     * @param longLat the location of drone in current step
-     */
-    public void addToPathRec(LongLat longLat) {
-        Point point = Point.fromLngLat(longLat.lng, longLat.lat);
-        pathRec.add(point);
-    }
-
-    /**
-     * return the locations hashmap in the map object
-     * @return locations hashmap
-     */
-    public HashMap<String, LongLat> getLocations() {
-        return map.locations;
-    }
-
-    /**
-     * return the locationsNames list in the map object
-     * @return locationNames list
-     */
-    public List<String> getLocationNames() {
-        return map.locationNames;
-    }
-
-    /**
-     * get the path recorded by the drone
-     * @return path record
-     */
-    public List<Point> getPathRecord() {
-        return pathRec;
     }
 }

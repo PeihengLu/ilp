@@ -2,7 +2,7 @@ package uk.ac.ed.inf;
 
 
 /**
- * class storing the detail of a location represented by a w3w address
+ * class storing the detail of a location represented by a w3w address,
  * coordinates and words fields are the most useful for us
  */
 public class Location {

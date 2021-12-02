@@ -11,6 +11,9 @@ import java.util.List;
 
 import static org.junit.Assert.*;
 
+/**
+ * Testing some basic functionalities of the software
+ */
 public class AppTest {
 
     private static final String VERSION = "1.0.5";

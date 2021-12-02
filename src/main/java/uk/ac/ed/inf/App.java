@@ -17,10 +17,9 @@ public class App
     private static DatabaseUtils databaseUtils;
     /** W3WUtils services */
     private static W3WUtils wUtils;
-
     /** create a menus object for calculating delivery cost and information about the shops */
     private static Menus menus;
-    /** drone object to store drone's location and energy information, also the planned path for it to follow*/
+    /** onboard system of the drone that controls its movement */
     private static Drone drone;
     /** the list of Orders ordered by their delivery cost, from highest to lowest */
     private static final Queue<Order> orders = new PriorityQueue<>(Collections.reverseOrder());
@@ -38,6 +37,7 @@ public class App
         String year = args[2];
         String port = args[3];
         String dbPort = args[4];
+
         // date of the orders to retrieve, use the same YYYY-MM-DD format as the database
         String date = String.join("-", year, month, day);
         System.out.println(date);

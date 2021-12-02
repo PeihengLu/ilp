@@ -4,6 +4,10 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * class providing methods to interface with the database, including creating, reading from and writing to the
+ * specified database tables
+ */
 public class DatabaseUtils {
     /** the address of the database server */
     public final String server;
@@ -93,7 +97,7 @@ public class DatabaseUtils {
 
 
     /**
-     * get the items to deliver for an order
+     * get the items to deliver for an order from orderDetails table
      * @param orderNo order number of the order
      * @return the items in that order
      */
