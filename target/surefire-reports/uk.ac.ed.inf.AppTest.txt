@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: uk.ac.ed.inf.AppTest
 -------------------------------------------------------------------------------
-Tests run: 24, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.292 s - in uk.ac.ed.inf.AppTest
+Tests run: 24, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.293 s - in uk.ac.ed.inf.AppTest

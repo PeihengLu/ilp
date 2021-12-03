@@ -78,7 +78,7 @@ public class Drone {
 
 
     /**
-     * initialize the three arrays storing the graph information and run the all pairs shortest path algorithm
+     * initialize the three arrays storing the graph information and run the all-pairs shortest path algorithm
      *
      * @param size the size of the graph, same as number of locations in the map
      */
@@ -364,12 +364,15 @@ public class Drone {
 
     /**
      * return the drone to Appleton tower
-     *
      * @return true if the drone made it back to the Tower, false otherwise
      */
     private boolean returnToAppleton() {
+        int intersected = findPath(currLocName, "Appleton Tower");
+        if (intersected == -1) {
+            System.err.println("Problem retrieving the path");
+        }
         // fly back to Appleton tower
-        if (findPath(currLocName, "Appleton Tower") == 1) {
+        if (intersected == 1) {
             Stack<Integer> angles = planAStar(LongLat.AT);
             moveAStar("NoOrder", angles);
         }
@@ -381,7 +384,6 @@ public class Drone {
 
     /**
      * set the target location of the drone for one lag
-     *
      * @param targetLoc     the coordinate of the target location
      * @param targetLocName the name of target location for one lag
      */
