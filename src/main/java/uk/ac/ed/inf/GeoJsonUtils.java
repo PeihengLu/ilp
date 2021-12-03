@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * helper methods to read and write
+ * providing helper methods to read and write GeoJson files
  */
 public class GeoJsonUtils {
     /** url to geojson file storing no-fly zones */

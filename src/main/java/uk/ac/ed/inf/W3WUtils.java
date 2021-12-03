@@ -4,7 +4,7 @@ package uk.ac.ed.inf;
 import com.google.gson.Gson;
 
 /**
- * class providing decoding functionality for what three words address
+ * class providing decoding functionality for W3W address
  */
 public class W3WUtils {
     /** the url to the part of website where the w3w translation information is stored */

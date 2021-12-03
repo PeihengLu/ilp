@@ -1,7 +1,7 @@
 package uk.ac.ed.inf;
 
 /**
- * The Node object used by A* algorithm
+ * The Node object used by A* algorithm,
  * if two nodes are 'very close' to each other, they equals
  */
 public class Node implements Comparable<Node>{

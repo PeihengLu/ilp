@@ -2,7 +2,6 @@ package uk.ac.ed.inf;
 
 import com.mapbox.geojson.*;
 import com.mapbox.geojson.Polygon;
-import org.mortbay.util.StringUtil;
 
 import java.util.*;
 

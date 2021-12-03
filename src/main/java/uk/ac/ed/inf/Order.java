@@ -4,7 +4,7 @@ import java.util.List;
 
 /**
  * Order object that contains necessary order information, and can be compared with each
- * other with a metric, currently only the deliveryCost
+ * other with the deliveryCost
  */
 public class Order implements Comparable<Order> {
     /** order number */

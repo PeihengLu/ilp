@@ -8,7 +8,7 @@ import java.net.http.HttpResponse;
 
 
 /**
- * Class used to read Json files from our web server
+ * Class used to read files from our web server
  */
 public class ServerUtils {
     /** url directed to the file to read */
