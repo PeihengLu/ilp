@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" name="uk.ac.ed.inf.AppTest" time="0.297" tests="24" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" name="uk.ac.ed.inf.AppTest" time="0.292" tests="24" errors="0" skipped="0" failures="0">
   <properties>
     <property name="java.specification.version" value="16"/>
     <property name="sun.jnu.encoding" value="UTF-8"/>
@@ -12,7 +12,7 @@
     <property name="sun.java.launcher" value="SUN_STANDARD"/>
     <property name="user.country" value="US"/>
     <property name="sun.boot.library.path" value="/home/peiheng/.jdks/openjdk-16.0.2/lib"/>
-    <property name="sun.java.command" value="/home/peiheng/Desktop/ILP/ilp/target/surefire/surefirebooter3958382795866089572.jar /home/peiheng/Desktop/ILP/ilp/target/surefire 2021-12-03T08-06-33_592-jvmRun1 surefire16698193521945440295tmp surefire_07132117836489497949tmp"/>
+    <property name="sun.java.command" value="/home/peiheng/Desktop/ILP/ilp/target/surefire/surefirebooter10847594145897353877.jar /home/peiheng/Desktop/ILP/ilp/target/surefire 2021-12-03T08-17-41_246-jvmRun1 surefire1629203716058482811tmp surefire_015693257994579619299tmp"/>
     <property name="jdk.debug" value="release"/>
     <property name="surefire.test.class.path" value="/home/peiheng/Desktop/ILP/ilp/target/test-classes:/home/peiheng/Desktop/ILP/ilp/target/classes:/home/peiheng/.m2/repository/junit/junit/4.11/junit-4.11.jar:/home/peiheng/.m2/repository/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar:/home/peiheng/.m2/repository/org/mortbay/jetty/jetty-util/6.1.25/jetty-util-6.1.25.jar:/home/peiheng/.m2/repository/com/mapbox/mapboxsdk/mapbox-sdk-geojson/5.8.0/mapbox-sdk-geojson-5.8.0.jar:/home/peiheng/.m2/repository/com/google/code/gson/gson/2.8.6/gson-2.8.6.jar:/home/peiheng/.m2/repository/org/apache/derby/derbyclient/10.15.2.0/derbyclient-10.15.2.0.jar:/home/peiheng/.m2/repository/org/apache/derby/derbyshared/10.15.2.0/derbyshared-10.15.2.0.jar:"/>
     <property name="sun.cpu.endian" value="little"/>
@@ -27,7 +27,7 @@
     <property name="line.separator" value="&#10;"/>
     <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
     <property name="java.specification.name" value="Java Platform API Specification"/>
-    <property name="surefire.real.class.path" value="/home/peiheng/Desktop/ILP/ilp/target/surefire/surefirebooter3958382795866089572.jar"/>
+    <property name="surefire.real.class.path" value="/home/peiheng/Desktop/ILP/ilp/target/surefire/surefirebooter10847594145897353877.jar"/>
     <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
     <property name="java.runtime.version" value="16.0.2+7-67"/>
     <property name="user.name" value="peiheng"/>
@@ -51,21 +51,21 @@
     <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
     <property name="java.class.version" value="60.0"/>
   </properties>
-  <testcase name="testCheckNFZ" classname="uk.ac.ed.inf.AppTest" time="0.245"/>
+  <testcase name="testCheckNFZ" classname="uk.ac.ed.inf.AppTest" time="0.244"/>
   <testcase name="testCloseToFalse" classname="uk.ac.ed.inf.AppTest" time="0"/>
   <testcase name="testAngle20" classname="uk.ac.ed.inf.AppTest" time="0"/>
   <testcase name="testAngle50" classname="uk.ac.ed.inf.AppTest" time="0"/>
   <testcase name="testAngle90" classname="uk.ac.ed.inf.AppTest" time="0"/>
-  <testcase name="testPathInterceptPolygon" classname="uk.ac.ed.inf.AppTest" time="0"/>
+  <testcase name="testPathInterceptPolygon" classname="uk.ac.ed.inf.AppTest" time="0.001"/>
   <testcase name="testCloseToTrue" classname="uk.ac.ed.inf.AppTest" time="0"/>
-  <testcase name="testMenusFourA" classname="uk.ac.ed.inf.AppTest" time="0.009"/>
-  <testcase name="testMenusFourB" classname="uk.ac.ed.inf.AppTest" time="0.003"/>
-  <testcase name="testMenusThree" classname="uk.ac.ed.inf.AppTest" time="0.004"/>
+  <testcase name="testMenusFourA" classname="uk.ac.ed.inf.AppTest" time="0.008"/>
+  <testcase name="testMenusFourB" classname="uk.ac.ed.inf.AppTest" time="0.004"/>
+  <testcase name="testMenusThree" classname="uk.ac.ed.inf.AppTest" time="0.003"/>
   <testcase name="testAngle140" classname="uk.ac.ed.inf.AppTest" time="0"/>
   <testcase name="testAngle190" classname="uk.ac.ed.inf.AppTest" time="0"/>
-  <testcase name="testAngle260" classname="uk.ac.ed.inf.AppTest" time="0"/>
+  <testcase name="testAngle260" classname="uk.ac.ed.inf.AppTest" time="0.001"/>
   <testcase name="testAngle300" classname="uk.ac.ed.inf.AppTest" time="0"/>
-  <testcase name="testAngle350" classname="uk.ac.ed.inf.AppTest" time="0.001"/>
+  <testcase name="testAngle350" classname="uk.ac.ed.inf.AppTest" time="0"/>
   <testcase name="testAngle999" classname="uk.ac.ed.inf.AppTest" time="0"/>
   <testcase name="testMenusOne" classname="uk.ac.ed.inf.AppTest" time="0.003"/>
   <testcase name="testMenusTwo" classname="uk.ac.ed.inf.AppTest" time="0.003"/>
@@ -74,5 +74,5 @@
   <testcase name="testIsConfinedTrueA" classname="uk.ac.ed.inf.AppTest" time="0"/>
   <testcase name="testIsConfinedTrueB" classname="uk.ac.ed.inf.AppTest" time="0"/>
   <testcase name="testDistanceTo" classname="uk.ac.ed.inf.AppTest" time="0"/>
-  <testcase name="testW3WParsing" classname="uk.ac.ed.inf.AppTest" time="0.003"/>
+  <testcase name="testW3WParsing" classname="uk.ac.ed.inf.AppTest" time="0.004"/>
 </testsuite>

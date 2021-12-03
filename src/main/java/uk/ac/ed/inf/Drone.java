@@ -137,6 +137,8 @@ public class Drone {
         int totalEarned = 0;
         // total possible earnings from all orders
         int totalCost = 0;
+        // add the starting location into the record
+        addToPathRec(currLoc);
         // go through all the orders and plan the path for each one
         while (!orders.isEmpty()) {
             Order currOrder = orders.poll();
@@ -454,7 +456,7 @@ public class Drone {
      * making a move by change currPos to nextPos
      */
     public void makeNextMove(String orderNo) {
-        addToPathRec(currLoc);
+        addToPathRec(nextLoc);
         // store flight path into the database flightpath table
         if (!databaseUtils.storePath(orderNo, currLoc, angle, nextLoc)) {
             System.err.println("Problem writing to flightpath table");
